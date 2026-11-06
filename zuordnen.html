@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Vom Home-Bildschirm gestartet: ohne Safari-Leisten (wie eine App) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Seifenblasen">
+  <title>Code und Kommentar – Seifenblasenmaschine</title>
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06c">
+</head>
+<body class="seite-code">
+
+  <header class="kopf">
+    <a class="knopf" href="index.html">← Übersicht</a>
+    <h1 id="titel">Code und Kommentar</h1>
+    <nav class="aufgabenwahl" id="programmwahl" aria-label="Programm wählen"></nav>
+  </header>
+
+  <main class="code-spiel">
+    <section class="code-bereich" aria-label="Programmcode">
+      <p class="auftrag" id="auftrag"></p>
+      <p class="klein">Tippe eine Codezeile an und dann den passenden Kommentar (oder umgekehrt). Du kannst einen Kommentar auch auf die Zeile ziehen. Ein zugeordneter Kommentar lässt sich durch Antippen wieder lösen. Graue Zeilen brauchen keinen Kommentar.</p>
+      <ol class="codeliste" id="codeliste"></ol>
+    </section>
+
+    <aside class="seitenleiste kommentar-bereich">
+      <h2>Kommentare</h2>
+      <div class="kommentarliste" id="kommentarliste"></div>
+      <button type="button" class="knopf haupt gross" id="pruefen">✔ Prüfen</button>
+      <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
+      <div id="rueckmeldung" class="rueckmeldung" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <script>window.DATEN = {};</script>
+  <script src="js/gemeinsam.js?v=2026-11-06c"></script>
+  <script src="data/dokumente.js?v=2026-11-06c"></script>
+  <script src="data/code.js?v=2026-11-06c"></script>
+  <script src="js/codeanzeige.js?v=2026-11-06c"></script>
+  <script src="js/zuordnen.js?v=2026-11-06c"></script>
+</body>
+</html>

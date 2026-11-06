@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
   <title>Seifenblasenmaschine – Wiederholung</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06b">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06c">
 </head>
 <body class="seite-start">
   <header class="kopf">
@@ -25,7 +25,12 @@
 
     <section class="bereich">
       <h2>Level 2: Programmieren</h2>
-      <p class="klein">Kommt bald.</p>
+      <h3>Teil A: Code und Kommentar zuordnen</h3>
+      <p>Ordne jeder Codezeile den passenden Kommentar zu.</p>
+      <ul class="aufgabenliste" id="liste2a"></ul>
+      <h3>Teil B: Fehlersuche</h3>
+      <p>In jedem Programm stecken Fehler. Finde die falschen Zeilen.</p>
+      <ul class="aufgabenliste" id="liste2b"></ul>
     </section>
 
     <section class="bereich">
@@ -37,21 +42,29 @@
   </main>
 
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06b"></script>
-  <script src="data/aufgaben.js?v=2026-11-06b"></script>
+  <script src="js/gemeinsam.js?v=2026-11-06c"></script>
+  <script src="data/aufgaben.js?v=2026-11-06c"></script>
+  <script src="data/code.js?v=2026-11-06c"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06c"></script>
   <script>
     // Liste der Verdrahtungsaufgaben mit Sternen
     (function () {
-      var liste = document.getElementById("liste1");
-      DATEN.aufgaben.forEach(function (a) {
-        var geloest = Fortschritt.istGeloest("verkabeln", a.id);
-        var li = document.createElement("li");
-        li.innerHTML = '<a class="knopf aufgabe-link" href="verkabeln.html?aufgabe=' + a.id + '">' +
-          '<span class="nr">' + a.id + "</span><span>" + esc(a.titel) + "</span>" +
-          '<span class="stern' + (geloest ? "" : " leer") + '" aria-label="' + (geloest ? "gelöst" : "noch nicht gelöst") + '">' +
-          (geloest ? "★" : "☆") + "</span></a>";
-        liste.appendChild(li);
-      });
+      // Eine Liste mit Aufgaben-Links und Sternen füllen
+      function fuelle(listenId, eintraege, bereich, adresse) {
+        var liste = document.getElementById(listenId);
+        eintraege.forEach(function (a, i) {
+          var geloest = Fortschritt.istGeloest(bereich, a.id);
+          var li = document.createElement("li");
+          li.innerHTML = '<a class="knopf aufgabe-link" href="' + adresse + a.id + '">' +
+            '<span class="nr">' + (i + 1) + "</span><span>" + esc(a.titel) + "</span>" +
+            '<span class="stern' + (geloest ? "" : " leer") + '" aria-label="' + (geloest ? "gelöst" : "noch nicht gelöst") + '">' +
+            (geloest ? "★" : "☆") + "</span></a>";
+          liste.appendChild(li);
+        });
+      }
+      fuelle("liste1", DATEN.aufgaben, "verkabeln", "verkabeln.html?aufgabe=");
+      fuelle("liste2a", DATEN.programme, "zuordnen", "zuordnen.html?programm=");
+      fuelle("liste2b", DATEN.fehlersuche, "fehlersuche", "fehlersuche.html?aufgabe=");
       document.getElementById("version").textContent = "Version " + SPIEL_VERSION;
       document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " Sterne";
 

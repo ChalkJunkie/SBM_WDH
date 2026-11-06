@@ -230,3 +230,74 @@ body.modus-anordnen .nur-verkabeln { display: none !important; }
 .knopf:disabled { opacity: .45; cursor: default; }
 .tipp-vorgaenger { margin: 0; padding: .6rem .8rem; border-radius: 10px; background: var(--info-hell); border: 2px solid var(--info); }
 .tipp-vorgaenger a { color: var(--info); font-weight: 700; }
+
+/* =====================================================================
+   Level 2: Code-Seiten (zuordnen.html, fehlersuche.html)
+   ===================================================================== */
+.seite-code { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.code-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); }
+.code-bereich { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; display: flex; flex-direction: column; gap: .6rem; }
+@media (orientation: portrait) {
+  .code-spiel { grid-template-columns: 1fr; grid-template-rows: minmax(0, 58%) minmax(0, 42%); }
+  .code-spiel .seitenleiste { border-left: none; border-top: 2px solid var(--rand); }
+}
+
+/* Codezeilen */
+.codeliste { list-style: none; margin: 0; padding: 0; background: #1f2430; border-radius: 12px; overflow: hidden; }
+.codezeile {
+  display: grid; grid-template-columns: 2.6em 1fr; align-items: start;
+  border-bottom: 1px solid #2e3443; color: #e8e8e8;
+}
+.codezeile:last-child { border-bottom: none; }
+.zeilennr { color: #8a92a6; text-align: right; padding: .45rem .5rem .45rem 0; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; user-select: none; }
+.code { font: 17px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; padding: .45rem .4rem; overflow-wrap: anywhere; }
+.codezeile.grau .code { opacity: .55; }
+.codezeile.zuordenbar { cursor: pointer; }
+.codezeile.gewaehlt, .codezeile.ueber { background: #2c4a73; box-shadow: inset 4px 0 0 #6fb1ff; }
+.c-schluessel { color: #7fb3ff; font-weight: 700; }
+.c-befehl { color: #f5b25b; }
+.c-konstante { color: #6fd6c0; }
+.c-typ { color: #e59af0; }
+.c-zahl { color: #ffd479; }
+
+/* Kommentar-Platz unter einer Zeile */
+.slot {
+  grid-column: 2; margin: 0 .4rem .45rem 0; min-height: var(--tippflaeche); text-align: left;
+  border: 2px dashed #6f7890; border-radius: 10px; background: transparent; color: #c8cede;
+  font: 15px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif; padding: .35rem .6rem;
+  display: flex; align-items: center; gap: .5rem; cursor: pointer; touch-action: manipulation;
+}
+.slot.belegt { border-style: solid; border-color: #8fb3e8; background: #27324a; color: #b9f0b0; }
+.codezeile.richtig .slot { border-color: #3fbf5f; background: #1d3a26; }
+.codezeile.falsch .slot { border-color: #ff6b6b; background: #4a1f24; color: #ffd3d3; }
+.slot-symbol { font-weight: 700; font-size: 1.2rem; }
+.codezeile.richtig .slot-symbol { color: #3fdf6f; }
+.codezeile.falsch .slot-symbol { color: #ff8a8a; }
+.slot-leer { opacity: .8; }
+
+/* Kommentarkarten */
+.kommentar-bereich h2 { margin: 0; }
+.kommentarliste { display: flex; flex-direction: column; gap: .45rem; }
+.karte {
+  text-align: left; min-height: var(--tippflaeche); padding: .5rem .7rem; border-radius: 10px;
+  border: 2px solid var(--rand); background: #f7f6f2; color: #23492a; cursor: grab;
+  font: 15px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif; touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.karte.gewaehlt { border: 4px solid var(--akzent); background: var(--info-hell); }
+.karte.geist { position: fixed; z-index: 60; max-width: 320px; pointer-events: none; opacity: .92; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+body.zieht-karte { cursor: grabbing; }
+
+/* Fehlersuche */
+.verkabelung { width: 100%; border-collapse: collapse; background: var(--flaeche); border-radius: 10px; overflow: hidden; }
+.verkabelung th, .verkabelung td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--rand); font-size: .95rem; }
+.verkabelung th { background: #ece8de; }
+.codezeile.antippbar { cursor: pointer; }
+.codezeile.angetippt { background: #4a1f24; box-shadow: inset 4px 0 0 #ff6b6b; }
+.codezeile.angetippt .zeilennr::before { content: "✖ "; color: #ff8a8a; }
+.codezeile.gefunden { background: #1d3a26; box-shadow: inset 4px 0 0 #3fbf5f; }
+.codezeile.gefunden .zeilennr::before { content: "✔ "; color: #3fdf6f; }
+.codezeile.loesung { background: #3d3418; box-shadow: inset 4px 0 0 #ffd479; }
+.korrektur { grid-column: 2; margin: 0 .4rem .45rem 0; padding: .35rem .6rem; border-radius: 8px; background: #2a3a26; color: #b9f0b0; font: 15px/1.4 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+.soll { margin: 0; padding: .6rem .8rem; border-radius: 10px; background: var(--info-hell); border: 2px solid var(--info); }
+.bereich h3 { font-size: 1.05rem; margin: 1rem 0 .3rem; }

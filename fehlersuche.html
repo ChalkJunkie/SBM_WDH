@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Vom Home-Bildschirm gestartet: ohne Safari-Leisten (wie eine App) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Seifenblasen">
+  <title>Fehlersuche – Seifenblasenmaschine</title>
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06c">
+</head>
+<body class="seite-code">
+
+  <header class="kopf">
+    <a class="knopf" href="index.html">← Übersicht</a>
+    <h1 id="titel">Fehlersuche</h1>
+    <nav class="aufgabenwahl" id="aufgabenwahl" aria-label="Aufgabe wählen"></nav>
+  </header>
+
+  <main class="code-spiel">
+    <section class="code-bereich" aria-label="Programmcode">
+      <p class="soll" id="soll"></p>
+      <table class="verkabelung" id="verkabelung"></table>
+      <p class="klein">Tippe alle Zeilen an, die falsch sind (nochmal antippen hebt die Markierung auf). Fehlt eine ganze Zeile, tippe die Zeile an, <strong>vor</strong> der sie fehlt.</p>
+      <ol class="codeliste" id="codeliste"></ol>
+    </section>
+
+    <aside class="seitenleiste">
+      <p id="anzahl" class="auftrag"></p>
+      <button type="button" class="knopf haupt gross" id="pruefen">✔ Prüfen</button>
+      <div class="knopfreihe">
+        <button type="button" class="knopf" id="loesung">💡 Lösung zeigen</button>
+        <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
+      </div>
+      <div id="rueckmeldung" class="rueckmeldung" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <script>window.DATEN = {};</script>
+  <script src="js/gemeinsam.js?v=2026-11-06c"></script>
+  <script src="data/dokumente.js?v=2026-11-06c"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06c"></script>
+  <script src="js/codeanzeige.js?v=2026-11-06c"></script>
+  <script src="js/fehlersuche.js?v=2026-11-06c"></script>
+</body>
+</html>
