@@ -8,9 +8,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
   <title>Fehlersuche – Seifenblasenmaschine</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06c">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06d">
 </head>
-<body class="seite-code">
+<body class="seite-code seite-fehlersuche">
 
   <header class="kopf">
     <a class="knopf" href="index.html">← Übersicht</a>
@@ -18,30 +18,34 @@
     <nav class="aufgabenwahl" id="aufgabenwahl" aria-label="Aufgabe wählen"></nav>
   </header>
 
-  <main class="code-spiel">
-    <section class="code-bereich" aria-label="Programmcode">
-      <p class="soll" id="soll"></p>
+  <main class="fs-spiel">
+    <!-- Links: was das Programm tun soll -->
+    <section class="fs-links" aria-label="Programmablaufplan und Verkabelung">
+      <h2>So soll das Programm ablaufen</h2>
+      <div id="pap" class="pap-behaelter"></div>
       <table class="verkabelung" id="verkabelung"></table>
-      <p class="klein">Tippe alle Zeilen an, die falsch sind (nochmal antippen hebt die Markierung auf). Fehlt eine ganze Zeile, tippe die Zeile an, <strong>vor</strong> der sie fehlt.</p>
-      <ol class="codeliste" id="codeliste"></ol>
     </section>
 
-    <aside class="seitenleiste">
-      <p id="anzahl" class="auftrag"></p>
-      <button type="button" class="knopf haupt gross" id="pruefen">✔ Prüfen</button>
-      <div class="knopfreihe">
-        <button type="button" class="knopf" id="loesung">💡 Lösung zeigen</button>
-        <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
-      </div>
-      <div id="rueckmeldung" class="rueckmeldung" aria-live="polite"></div>
-    </aside>
+    <!-- Rechts: der Code mit Fehlern -->
+    <section class="code-bereich fs-rechts" aria-label="Programmcode">
+      <p class="auftrag"><strong id="anzahl"></strong> Tippe die falschen Zeilen an (nochmal antippen hebt die Markierung auf). Fehlt eine ganze Zeile, tippe die Zeile an, <strong>vor</strong> der sie fehlt.</p>
+      <ol class="codeliste" id="codeliste"></ol>
+    </section>
   </main>
 
+  <!-- Unten: Knöpfe und kurze Rückmeldung -->
+  <footer class="fussleiste">
+    <div id="zusammenfassung" class="zusammenfassung" aria-live="polite"></div>
+    <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
+    <button type="button" class="knopf haupt" id="pruefen">✔ Prüfen</button>
+  </footer>
+
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06c"></script>
-  <script src="data/dokumente.js?v=2026-11-06c"></script>
-  <script src="data/fehlersuche.js?v=2026-11-06c"></script>
-  <script src="js/codeanzeige.js?v=2026-11-06c"></script>
-  <script src="js/fehlersuche.js?v=2026-11-06c"></script>
+  <script src="js/gemeinsam.js?v=2026-11-06d"></script>
+  <script src="data/dokumente.js?v=2026-11-06d"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06d"></script>
+  <script src="js/codeanzeige.js?v=2026-11-06d"></script>
+  <script src="js/pap.js?v=2026-11-06d"></script>
+  <script src="js/fehlersuche.js?v=2026-11-06d"></script>
 </body>
 </html>

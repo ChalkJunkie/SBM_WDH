@@ -5,11 +5,16 @@
 //   id           Nummer (in der Adresse: fehlersuche.html?aufgabe=1)
 //   titel        Überschrift
 //   soll         was das Programm tun soll
-//   verkabelung  so ist die Schaltung gesteckt (Tabelle über dem Code)
+//   verkabelung  so ist die Schaltung gesteckt (Tabelle links)
+//   pap          Programmablaufplan des RICHTIGEN Programms (links), Formen:
+//                  {"art":"start","text":"Start"}           abgerundet
+//                  {"art":"schritt","text":"LED an"}        Rechteck
+//                  {"art":"frage","text":"Taster gedrückt?","ja":[...],"nein":[...]}
+//                  {"art":"schleife","schritte":[...]}      Loop (Pfeil zurück)
 //   zeilen       das Programm MIT den eingebauten Fehlern, Zeile für Zeile
 //   fehler       die falschen Zeilen:
 //     zeile      Zeilennummer (die erste Zeile ist 1)
-//     richtig    so wäre die Zeile richtig (wird bei der Lösung gezeigt)
+//     richtig    so wäre die Zeile richtig (wird gezeigt, sobald gefunden)
 //     fehlt      true = hier fehlt eine ganze Zeile. Die Schüler:innen
 //                tippen dann die Zeile an, VOR der sie fehlen müsste.
 //     warum      Erklärung
@@ -25,6 +30,7 @@ DATEN.fehlersuche = [
     "titel": "Servo (2 Fehler)",
     "soll": "Der Servo soll abwechselnd auf 30 Grad und auf 90 Grad fahren und dort jeweils eine Sekunde bleiben.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9", "Servo: Plus (rot) an 3V3, GND (braun) an GND"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Servo an Pin 9 festlegen"}, {"art": "schleife", "schritte": [{"art": "schritt", "text": "Servo auf 30 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}, {"art": "schritt", "text": "Servo auf 90 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}]}],
     "zeilen": [
       "#include <Servo.h>",
       "Servo S1;",
@@ -50,6 +56,7 @@ DATEN.fehlersuche = [
     "titel": "Servo (1 Fehler)",
     "soll": "Der Servo soll abwechselnd auf 30 Grad und auf 90 Grad fahren und dort jeweils eine Sekunde bleiben.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9", "Servo: Plus (rot) an 3V3, GND (braun) an GND"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Servo an Pin 9 festlegen"}, {"art": "schleife", "schritte": [{"art": "schritt", "text": "Servo auf 30 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}, {"art": "schritt", "text": "Servo auf 90 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}]}],
     "zeilen": [
       "Servo S1;",
       "void setup() {",
@@ -73,6 +80,7 @@ DATEN.fehlersuche = [
     "titel": "Taster mit LED (2 Fehler)",
     "soll": "Wird der zweibeinige Taster gedrückt, soll die LED fünf Sekunden lang leuchten.",
     "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "LED (mit Vorwiderstand) an Pin 6"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "LED an"}, {"art": "schritt", "text": "5 Sekunden warten"}, {"art": "schritt", "text": "LED aus"}], "nein": [{"art": "schritt", "text": "LED aus"}]}]}],
     "zeilen": [
       "int LED = 6;",
       "int taster = 2;",
@@ -107,6 +115,7 @@ DATEN.fehlersuche = [
     "titel": "Taster mit LED (2 Fehler)",
     "soll": "Wird der zweibeinige Taster gedrückt, soll die LED fünf Sekunden lang leuchten.",
     "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "LED (mit Vorwiderstand) an Pin 6"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "LED an"}, {"art": "schritt", "text": "5 Sekunden warten"}, {"art": "schritt", "text": "LED aus"}], "nein": [{"art": "schritt", "text": "LED aus"}]}]}],
     "zeilen": [
       "int LED = 6;",
       "int taster = 7;",
@@ -140,6 +149,7 @@ DATEN.fehlersuche = [
     "titel": "DC-Motor (2 Fehler)",
     "soll": "Der Motor soll sich zwei Sekunden in die eine Richtung drehen, zwei Sekunden in die andere Richtung und dann zwei Sekunden stillstehen.",
     "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8", "DC-Motor an Klemme Motor B", "Batterie in der Strombuchse, VIN an +12V, GND an GND"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schleife", "schritte": [{"art": "schritt", "text": "Motor dreht in eine Richtung (Geschwindigkeit 200)"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor dreht andersherum"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor aus"}, {"art": "schritt", "text": "2 Sekunden warten"}]}],
     "zeilen": [
       "int ENB = 2;",
       "int in4 = 7;",
@@ -176,6 +186,7 @@ DATEN.fehlersuche = [
     "titel": "Servo und Taster (2 Fehler)",
     "soll": "Solange der Taster gedrückt ist, soll der Servo auf 90 Grad fahren. Sonst steht er auf 0 Grad.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9", "Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schritt", "text": "Servo auf 0 Grad (Startposition)"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "Servo auf 90 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}], "nein": [{"art": "schritt", "text": "Servo auf 0 Grad"}]}]}],
     "zeilen": [
       "#include <Servo.h>",
       "Servo S1;",
@@ -210,6 +221,7 @@ DATEN.fehlersuche = [
     "titel": "DC-Motor, Taster und Servo (3 Fehler)",
     "soll": "Wird der Taster gedrückt, soll der Servoarm auf 90 Grad fahren und der Motor sich zwei Sekunden lang drehen. Sonst ist der Motor aus und der Servo steht auf 0 Grad.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9", "Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schritt", "text": "Servo auf 0 Grad (Startposition)"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "Servoarm auf 90 Grad"}, {"art": "schritt", "text": "Motor an (Geschwindigkeit 200)"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor aus"}], "nein": [{"art": "schritt", "text": "Motor aus"}, {"art": "schritt", "text": "Servo auf 0 Grad"}]}]}],
     "zeilen": [
       "#include <Servo.h>",
       "Servo S1;",
@@ -259,6 +271,7 @@ DATEN.fehlersuche = [
     "titel": "DC-Motor, Taster und Servo (2 Fehler)",
     "soll": "Wird der Taster gedrückt, soll der Servoarm auf 90 Grad fahren und der Motor sich zwei Sekunden lang VORWÄRTS drehen (vorwärts heißt bei uns: in3 HIGH, in4 LOW). Sonst ist der Motor aus und der Servo steht auf 0 Grad.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9", "Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8"],
+    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schritt", "text": "Servo auf 0 Grad (Startposition)"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "Servoarm auf 90 Grad"}, {"art": "schritt", "text": "Motor vorwärts an: in3 HIGH, in4 LOW, Geschwindigkeit 200"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor aus"}], "nein": [{"art": "schritt", "text": "Motor aus"}, {"art": "schritt", "text": "Servo auf 0 Grad"}]}]}],
     "zeilen": [
       "#include <Servo.h>",
       "Servo S1;",

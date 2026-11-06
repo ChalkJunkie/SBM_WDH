@@ -235,8 +235,11 @@ body.modus-anordnen .nur-verkabeln { display: none !important; }
    Level 2: Code-Seiten (zuordnen.html, fehlersuche.html)
    ===================================================================== */
 .seite-code { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-.code-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); }
-.code-bereich { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; display: flex; flex-direction: column; gap: .6rem; }
+/* minmax(0, 1fr) als Zeilenhöhe: sonst wird der Bereich so hoch wie sein
+   Inhalt und lässt sich nicht scrollen */
+.code-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); grid-template-rows: minmax(0, 1fr); }
+.code-bereich { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; display: flex; flex-direction: column; gap: .6rem; }
+.code-bereich > * { flex-shrink: 0; }
 @media (orientation: portrait) {
   .code-spiel { grid-template-columns: 1fr; grid-template-rows: minmax(0, 58%) minmax(0, 42%); }
   .code-spiel .seitenleiste { border-left: none; border-top: 2px solid var(--rand); }
@@ -244,13 +247,16 @@ body.modus-anordnen .nur-verkabeln { display: none !important; }
 
 /* Codezeilen */
 .codeliste { list-style: none; margin: 0; padding: 0; background: #1f2430; border-radius: 12px; overflow: hidden; }
+.codeliste { font: 16px/1.5 ui-monospace, Menlo, Consolas, monospace; }
 .codezeile {
-  display: grid; grid-template-columns: 2.6em 1fr; align-items: start;
+  display: grid; grid-template-columns: 2.6em minmax(0, 1fr); align-items: center;
   border-bottom: 1px solid #2e3443; color: #e8e8e8;
 }
+/* Teil A: Kommentar HINTER der Codezeile (Spaltenbreite = längste Zeile) */
+.codeliste.mit-kommentaren .codezeile { grid-template-columns: 2.6em calc(var(--code-ch, 30) * 1ch + 1rem) minmax(0, 1fr); }
 .codezeile:last-child { border-bottom: none; }
 .zeilennr { color: #8a92a6; text-align: right; padding: .45rem .5rem .45rem 0; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; user-select: none; }
-.code { font: 17px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; padding: .45rem .4rem; overflow-wrap: anywhere; }
+.code { font: inherit; white-space: pre; padding: .45rem .4rem; }
 .codezeile.grau .code { opacity: .55; }
 .codezeile.zuordenbar { cursor: pointer; }
 .codezeile.gewaehlt, .codezeile.ueber { background: #2c4a73; box-shadow: inset 4px 0 0 #6fb1ff; }
@@ -262,7 +268,7 @@ body.modus-anordnen .nur-verkabeln { display: none !important; }
 
 /* Kommentar-Platz unter einer Zeile */
 .slot {
-  grid-column: 2; margin: 0 .4rem .45rem 0; min-height: var(--tippflaeche); text-align: left;
+  grid-column: 3; margin: .2rem .4rem .2rem 0; min-height: var(--tippflaeche); text-align: left;
   border: 2px dashed #6f7890; border-radius: 10px; background: transparent; color: #c8cede;
   font: 15px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif; padding: .35rem .6rem;
   display: flex; align-items: center; gap: .5rem; cursor: pointer; touch-action: manipulation;
@@ -301,3 +307,47 @@ body.zieht-karte { cursor: grabbing; }
 .korrektur { grid-column: 2; margin: 0 .4rem .45rem 0; padding: .35rem .6rem; border-radius: 8px; background: #2a3a26; color: #b9f0b0; font: 15px/1.4 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
 .soll { margin: 0; padding: .6rem .8rem; border-radius: 10px; background: var(--info-hell); border: 2px solid var(--info); }
 .bereich h3 { font-size: 1.05rem; margin: 1rem 0 .3rem; }
+
+/* Schmale Bildschirme: Kommentar doch unter der Zeile */
+@media (max-width: 760px) {
+  .codeliste.mit-kommentaren .codezeile { grid-template-columns: 2.6em minmax(0, 1fr); }
+  .slot { grid-column: 2; margin: 0 .4rem .45rem 0; }
+  .code { white-space: pre-wrap; overflow-wrap: anywhere; }
+}
+
+/* ---------- Fehlersuche: links PAP, rechts Code, unten Fußleiste ---------- */
+.fs-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.5fr); grid-template-rows: minmax(0, 1fr); }
+.fs-links { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; background: var(--flaeche); border-right: 2px solid var(--rand); display: flex; flex-direction: column; gap: .8rem; }
+.fs-links > * { flex-shrink: 0; }
+.fs-links h2 { margin: 0; font-size: 1.1rem; }
+.pap-behaelter { display: flex; justify-content: center; }
+.pap { width: 100%; height: auto; }
+.pap-start { fill: #dbe9f8; stroke: #1b1b1b; stroke-width: 2; }
+.pap-schritt { fill: #ffffff; stroke: #1b1b1b; stroke-width: 2; }
+.pap-frage { fill: #fff4cf; stroke: #1b1b1b; stroke-width: 2; }
+.pap-text { font: 14px -apple-system, "Segoe UI", system-ui, sans-serif; fill: #1b1b1b; }
+.pap-label { font: italic 13px -apple-system, "Segoe UI", system-ui, sans-serif; fill: #333; }
+.pap-linie { fill: none; stroke: #1b1b1b; stroke-width: 2; }
+.pap-spitze { fill: #1b1b1b; }
+.fussleiste {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  padding: .5rem max(.75rem, env(safe-area-inset-right)) max(.5rem, env(safe-area-inset-bottom)) max(.75rem, env(safe-area-inset-left));
+  background: var(--flaeche); border-top: 2px solid var(--rand);
+}
+.fussleiste .knopf { min-width: 9rem; }
+.fussleiste .knopf.haupt { font-size: 1.1rem; }
+.zusammenfassung { flex: 1 1 18rem; display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-weight: 600; }
+.zf-richtig { color: var(--richtig); }
+.zf-falsch { color: var(--fehler); }
+.zf-fehlt { color: var(--fehlt); }
+.codezeile.daneben { background: #4a1f24; box-shadow: inset 4px 0 0 #ff6b6b; }
+.codezeile.daneben .zeilennr::before { content: "✖ "; color: #ff8a8a; }
+.erklaerung { grid-column: 2; margin: 0 .4rem .5rem 0; padding: .45rem .6rem; border-radius: 8px; font: 15px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif; white-space: normal; }
+.erklaerung.richtig { background: #e2f3e5; color: #12391c; }
+.erklaerung.falsch { background: #fbe4e4; color: #5c1010; }
+.korrektur-code { display: block; margin-top: .25rem; font: 15px/1.4 ui-monospace, Menlo, monospace; }
+.erklaerung .meldung-dokument { color: #3b4a3e; }
+@media (orientation: portrait) {
+  .fs-spiel { grid-template-columns: minmax(230px, 0.85fr) minmax(0, 1.4fr); }
+  .seite-fehlersuche .codeliste { font-size: 14px; }
+}

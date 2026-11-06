@@ -1,10 +1,13 @@
 // =====================================================================
 // js/fehlersuche.js – Level 2, Teil B: Fehler im Programm finden
 // ---------------------------------------------------------------------
-// Die Schüler:innen tippen die falschen Zeilen an und prüfen.
-// Rückmeldung: welche Zeilen richtig erkannt wurden (mit Erklärung und
-// Dokument), welche Markierungen falsch sind und wie viele Fehler noch
-// fehlen (ohne zu verraten, wo). "Lösung zeigen" verrät alles.
+// Links steht der Programmablaufplan (so SOLL das Programm laufen) und
+// die Verkabelung, rechts der Code mit Fehlern. Die Schüler:innen tippen
+// die falschen Zeilen an und drücken "Prüfen" (Fußleiste).
+// Rückmeldung direkt an den Zeilen:
+//   ✔ richtig gefunden  -> Erklärung, richtige Zeile, Dokument
+//   ✖ falsch markiert   -> "Diese Zeile ist in Ordnung."
+//   nicht gefunden      -> nur die Anzahl (ohne zu verraten, wo)
 // =====================================================================
 (function () {
 
@@ -17,24 +20,20 @@
   var fehlerBei = {};
   aufgabe.fehler.forEach(function (f) { fehlerBei[f.zeile - 1] = f; });
 
-  var gespeichert = Speicher.lesen(speicherName, null) || {};
-  var markiert = gespeichert.markiert || {};        // Zeilenindex -> true
-  var loesungGesehen = !!gespeichert.loesungGesehen;
-  var ergebnis = null;                              // nach dem Prüfen
-  var zeigeLoesung = false;
+  var markiert = (Speicher.lesen(speicherName, null) || {}).markiert || {};   // Zeilenindex -> true
+  var geprueft = false;
 
-  function speichern() {
-    Speicher.schreiben(speicherName, { markiert: markiert, loesungGesehen: loesungGesehen });
-  }
+  function speichern() { Speicher.schreiben(speicherName, { markiert: markiert }); }
 
   // ---------- Seite aufbauen ----------
   document.getElementById("titel").textContent = "Fehlersuche " + aufgabe.id + ": " + aufgabe.titel;
   document.title = "Fehlersuche " + aufgabe.id;
-  document.getElementById("soll").innerHTML = "<strong>Das Programm soll:</strong> " + esc(aufgabe.soll);
   document.getElementById("verkabelung").innerHTML = "<tr><th>So ist die Schaltung verkabelt</th></tr>" +
     aufgabe.verkabelung.map(function (v) { return "<tr><td>" + esc(v) + "</td></tr>"; }).join("");
+  if (aufgabe.pap) PAP.zeichne(document.getElementById("pap"), aufgabe.pap);
+  else document.getElementById("pap").innerHTML = "<p>" + esc(aufgabe.soll || "") + "</p>";
   var n = aufgabe.fehler.length;
-  document.getElementById("anzahl").textContent = "In diesem Programm " + (n === 1 ? "steckt 1 Fehler." : "stecken " + n + " Fehler.");
+  document.getElementById("anzahl").textContent = (n === 1 ? "Hier steckt 1 Fehler." : "Hier stecken " + n + " Fehler.");
 
   var wahl = document.getElementById("aufgabenwahl");
   aufgaben.forEach(function (a) {
@@ -47,25 +46,28 @@
   });
 
   var codeliste = document.getElementById("codeliste");
-  var rueckmeldung = document.getElementById("rueckmeldung");
+  var zusammenfassung = document.getElementById("zusammenfassung");
 
   function zeichne() {
     codeliste.innerHTML = "";
     aufgabe.zeilen.forEach(function (code, i) {
       var li = document.createElement("li");
+      var f = fehlerBei[i];
       var klasse = "codezeile antippbar";
-      if (zeigeLoesung && fehlerBei[i]) klasse += " loesung";
-      else if (ergebnis && markiert[i] && fehlerBei[i]) klasse += " gefunden";
+      if (geprueft && markiert[i] && f) klasse += " gefunden";
+      else if (geprueft && markiert[i]) klasse += " daneben";
       else if (markiert[i]) klasse += " angetippt";
       li.className = klasse;
       li.setAttribute("data-zeile", i);
       li.setAttribute("role", "button");
       li.setAttribute("aria-pressed", markiert[i] ? "true" : "false");
       var html = '<span class="zeilennr">' + (i + 1) + '</span><code class="code">' + CodeAnzeige.faerbe(code) + "</code>";
-      // Korrektur anzeigen: bei Lösung für alle Fehler, nach dem Prüfen für gefundene
-      var f = fehlerBei[i];
-      if (f && (zeigeLoesung || (ergebnis && markiert[i]))) {
-        html += '<div class="korrektur">' + (f.fehlt ? "Davor fehlt: " : "Richtig: ") + esc(f.richtig.trim()) + "</div>";
+      if (geprueft && markiert[i] && f) {
+        html += '<div class="erklaerung richtig"><strong>✔ Richtig erkannt.</strong> ' + esc(f.warum) +
+          '<span class="korrektur-code">' + (f.fehlt ? "Davor fehlt: " : "Richtig: ") + esc(f.richtig.trim()) + "</span>" +
+          (f.dokument ? '<span class="meldung-dokument">📖 Schau nach: ' + esc(dokumentText(f.dokument)) + "</span>" : "") + "</div>";
+      } else if (geprueft && markiert[i]) {
+        html += '<div class="erklaerung falsch"><strong>✖ Diese Zeile ist in Ordnung.</strong></div>';
       }
       li.innerHTML = html;
       codeliste.appendChild(li);
@@ -74,58 +76,26 @@
 
   codeliste.addEventListener("click", function (e) {
     var el = e.target.closest ? e.target.closest("[data-zeile]") : null;
-    if (!el || zeigeLoesung) return;
+    if (!el) return;
     var i = parseInt(el.getAttribute("data-zeile"), 10);
     if (markiert[i]) delete markiert[i]; else markiert[i] = true;
-    ergebnis = null;
-    if (rueckmeldung.innerHTML) rueckmeldung.innerHTML = '<p class="hinweis-veraltet">Du hast etwas geändert. Drücke wieder „Prüfen“.</p>';
+    if (geprueft) {
+      geprueft = false;
+      zusammenfassung.innerHTML = '<span class="klein">Du hast etwas geändert. Drücke wieder „Prüfen“.</span>';
+    }
     speichern(); zeichne();
   });
 
   // ---------- Prüfen ----------
   document.getElementById("pruefen").addEventListener("click", function () {
-    zeigeLoesung = false;
-    var gefunden = [], falschMarkiert = [], fehlend = 0;
-    Object.keys(markiert).forEach(function (s) {
-      var i = parseInt(s, 10);
-      if (fehlerBei[i]) gefunden.push(i); else falschMarkiert.push(i);
-    });
-    fehlend = aufgabe.fehler.length - gefunden.length;
-    gefunden.sort(function (a, b) { return a - b; });
-    falschMarkiert.sort(function (a, b) { return a - b; });
-    ergebnis = { gefunden: gefunden, falschMarkiert: falschMarkiert, fehlend: fehlend };
+    geprueft = true;
+    var gefunden = 0, daneben = 0;
+    Object.keys(markiert).forEach(function (s) { if (fehlerBei[s]) gefunden++; else daneben++; });
+    var fehlend = aufgabe.fehler.length - gefunden;
     zeichne();
 
-    var html = "";
-    var geloest = !fehlend && !falschMarkiert.length;
-    if (geloest) {
-      html += '<div class="meldung meldung-richtig"><span class="meldung-symbol">✔</span><div><strong>Alle Fehler gefunden!</strong>' +
-        (loesungGesehen ? " Du hattest dir die Lösung angesehen. Für einen Stern löse die Aufgabe später nochmal ohne Lösung." : " Du hast einen Stern bekommen.") + "</div></div>";
-    } else {
-      html += '<h2 class="rueckmeldung-titel">' + gefunden.length + " von " + aufgabe.fehler.length + " Fehlern gefunden.</h2>";
-    }
-    html += '<ol class="meldungen">';
-    gefunden.forEach(function (i) {
-      var f = fehlerBei[i];
-      html += '<li><div class="meldung meldung-richtig"><span class="meldung-symbol" aria-hidden="true">✔</span><span class="meldung-text">' +
-        '<span class="meldung-art">Zeile ' + (i + 1) + ":</span> " + esc(f.warum) +
-        (f.dokument ? '<span class="meldung-dokument">📖 Schau nach: ' + esc(dokumentText(f.dokument)) + "</span>" : "") + "</span></div></li>";
-    });
-    falschMarkiert.forEach(function (i) {
-      html += '<li><div class="meldung meldung-fehler"><span class="meldung-symbol" aria-hidden="true">✖</span><span class="meldung-text">' +
-        '<span class="meldung-art">Zeile ' + (i + 1) + ":</span> Diese Zeile ist in Ordnung.</span></div></li>";
-    });
-    if (fehlend) {
-      html += '<li><div class="meldung meldung-fehlt"><span class="meldung-symbol" aria-hidden="true">＋</span><span class="meldung-text">' +
-        '<span class="meldung-art">Fehlt noch:</span> ' + (fehlend === 1 ? "1 Fehler hast" : fehlend + " Fehler hast") +
-        " du noch nicht gefunden. Vergleiche den Code mit der Verkabelung und mit dem, was das Programm tun soll.</span></div></li>";
-    }
-    html += "</ol>";
-    rueckmeldung.innerHTML = html;
-
-    // Mit Lösung gelöst: kein Stern, aber beim nächsten Versuch zählt es wieder
-    if (geloest && loesungGesehen) { loesungGesehen = false; speichern(); }
-    else if (geloest) {
+    if (!fehlend && !daneben) {
+      zusammenfassung.innerHTML = '<span class="zf zf-richtig">✔ Alle Fehler gefunden!</span>';
       Fortschritt.setzeGeloest("fehlersuche", aufgabe.id);
       var stern = wahl.querySelector(".aktiv");
       if (stern && !stern.querySelector(".stern-klein")) stern.innerHTML += '<span class="stern-klein">★</span>';
@@ -134,36 +104,18 @@
       if (naechste) knoepfe.push({ text: "Nächste Aufgabe →", haupt: true, aktion: function () { location.href = "fehlersuche.html?aufgabe=" + naechste.id; } });
       knoepfe.push({ text: "Zur Übersicht", haupt: !naechste, aktion: function () { location.href = "index.html"; } });
       knoepfe.push({ text: "Hierbleiben" });
-      zeigeDialog({ titel: "Super, alle Fehler gefunden!", html: '<p class="stern-gross" aria-hidden="true">★</p>', knoepfe: knoepfe });
+      zeigeDialog({ titel: "Super, alle Fehler gefunden!", html: '<p class="stern-gross" aria-hidden="true">★</p><p>Die Erklärungen stehen jetzt direkt an den Zeilen.</p>', knoepfe: knoepfe });
+      return;
     }
-  });
-
-  // ---------- Lösung ----------
-  document.getElementById("loesung").addEventListener("click", function () {
-    zeigeDialog({
-      titel: "Lösung zeigen?",
-      html: "<p>Versuche es ruhig erst selbst. Wenn du die Lösung ansiehst, gibt es für diese Aufgabe erst wieder einen Stern, wenn du sie später nochmal ohne Lösung schaffst.</p>",
-      knoepfe: [
-        { text: "💡 Lösung zeigen", haupt: true, aktion: function () {
-          zeigeLoesung = true; loesungGesehen = true; ergebnis = null;
-          speichern(); zeichne();
-          var html = '<h2 class="rueckmeldung-titel">Lösung</h2><ol class="meldungen">';
-          aufgabe.fehler.forEach(function (f) {
-            html += '<li><div class="meldung meldung-info"><span class="meldung-symbol" aria-hidden="true">💡</span><span class="meldung-text">' +
-              '<span class="meldung-art">Zeile ' + f.zeile + ":</span> " + esc(f.warum) +
-              (f.dokument ? '<span class="meldung-dokument">📖 Schau nach: ' + esc(dokumentText(f.dokument)) + "</span>" : "") + "</span></div></li>";
-          });
-          html += "</ol>";
-          rueckmeldung.innerHTML = html;
-        } },
-        { text: "Abbrechen" }
-      ]
-    });
+    var teile = ['<span class="zf">' + gefunden + " von " + aufgabe.fehler.length + " Fehlern gefunden.</span>"];
+    if (daneben) teile.push('<span class="zf zf-falsch">✖ ' + daneben + (daneben === 1 ? " Zeile ist" : " Zeilen sind") + " in Ordnung.</span>");
+    if (fehlend) teile.push('<span class="zf zf-fehlt">＋ ' + fehlend + (fehlend === 1 ? " Fehler fehlt" : " Fehler fehlen") + " noch. Vergleiche mit dem Ablaufplan und der Verkabelung.</span>");
+    zusammenfassung.innerHTML = teile.join(" ");
   });
 
   document.getElementById("neustart").addEventListener("click", function () {
-    markiert = {}; ergebnis = null; zeigeLoesung = false;
-    rueckmeldung.innerHTML = "";
+    markiert = {}; geprueft = false;
+    zusammenfassung.innerHTML = "";
     speichern(); zeichne();
   });
 

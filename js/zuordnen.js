@@ -63,6 +63,9 @@
   });
 
   var codeliste = document.getElementById("codeliste");
+  // Breite der Code-Spalte = längste Zeile (damit alle Kommentare bündig stehen)
+  codeliste.classList.add("mit-kommentaren");
+  codeliste.style.setProperty("--code-ch", Math.max.apply(null, prog.zeilen.map(function (z) { return z.code.length; })));
   var kommentarliste = document.getElementById("kommentarliste");
   var rueckmeldung = document.getElementById("rueckmeldung");
 
