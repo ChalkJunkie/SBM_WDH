@@ -174,6 +174,7 @@
     "//   pwm       true = Pin mit ~ (PWM)",
     "//   belegbar  false = sichtbar, aber es darf kein Kabel dran",
     "//   farbe     Kabelfarbe des Bauteilkabels (für die Kabel-Automatik)",
+    "//   verbunden (nur Breadboard) Löcher, die innen leitend verbunden sind",
     "//   ausgang   (freiwillig) \"oben\", \"unten\", \"links\" oder \"rechts\": in diese",
     "//             Richtung (im Originalbild) verlässt das Kabel den Pin. Ohne",
     "//             Angabe: zur nächsten Bildkante.",
@@ -189,6 +190,12 @@
       ["name", "bild", "breite", "hoehe"].forEach(function (k) {
         zeilen.push('    "' + k + '": ' + JSON.stringify(b[k]) + ",");
       });
+      // Breadboard: innen verbundene Löcher unverändert übernehmen
+      if (b.verbunden) {
+        zeilen.push('    "verbunden": [');
+        zeilen.push(b.verbunden.map(function (g) { return "      " + JSON.stringify(g).replace(/","/g, '", "'); }).join(",\n"));
+        zeilen.push("    ],");
+      }
       zeilen.push('    "pins": [');
       b.pins.forEach(function (p, i) {
         zeilen.push("      " + JSON.stringify(p).replace(/":/g, '": ').replace(/,"/g, ', "') + (i < b.pins.length - 1 ? "," : ""));

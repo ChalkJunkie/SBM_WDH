@@ -14,7 +14,7 @@
   var aufgaben = DATEN.fehlersuche;
   var gewuenscht = parseInt(adressParameter("aufgabe"), 10);
   var aufgabe = aufgaben.filter(function (a) { return a.id === gewuenscht; })[0] || aufgaben[0];
-  var speicherName = "fehlersuche3_" + aufgabe.id;   // "3": Aufgaben wurden neu nummeriert
+  var speicherName = "fehlersuche4_" + aufgabe.id;   // "4": Aufgaben wurden neu nummeriert
 
   // Fehler nach Zeilenindex (0-basiert)
   var fehlerBei = {};
@@ -40,8 +40,8 @@
     var link = document.createElement("a");
     link.href = "fehlersuche.html?aufgabe=" + a.id;
     link.className = "knopf rund" + (a.id === aufgabe.id ? " aktiv" : "");
-    link.setAttribute("aria-label", "Fehlersuche " + a.id + (Fortschritt.istGeloest("fehlersuche3", a.id) ? " (gelöst)" : ""));
-    link.innerHTML = a.id + (Fortschritt.istGeloest("fehlersuche3", a.id) ? '<span class="stern-klein">★</span>' : "");
+    link.setAttribute("aria-label", "Fehlersuche " + a.id + (Fortschritt.istGeloest("fehlersuche4", a.id) ? " (gelöst)" : ""));
+    link.innerHTML = a.id + (Fortschritt.istGeloest("fehlersuche4", a.id) ? '<span class="stern-klein">★</span>' : "");
     wahl.appendChild(link);
   });
 
@@ -96,7 +96,7 @@
 
     if (!fehlend && !daneben) {
       zusammenfassung.innerHTML = '<span class="zf zf-richtig">✔ Alle Fehler gefunden!</span>';
-      Fortschritt.setzeGeloest("fehlersuche3", aufgabe.id);
+      Fortschritt.setzeGeloest("fehlersuche4", aufgabe.id);
       var stern = wahl.querySelector(".aktiv");
       if (stern && !stern.querySelector(".stern-klein")) stern.innerHTML += '<span class="stern-klein">★</span>';
       var naechste = aufgaben[aufgaben.indexOf(aufgabe) + 1];

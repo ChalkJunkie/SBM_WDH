@@ -133,5 +133,37 @@ DATEN.programme = [
       { "code": "  }" },
       { "code": "}", "kommentar": "Schließt den Loop-Teil." }
     ]
+  },
+  // ------------------------------------------------------------------
+  // Vierbeiniger Taster mit externem Pulldown-Widerstand (wie Arbeitsblatt
+  // Taster Praxis): INPUT und == HIGH. Im Vergleich zu "Servo und Taster".
+  {
+    "id": "taster4_servo",
+    "titel": "Vierbeiniger Taster und Servo",
+    "auftrag": "Der vierbeinige Taster hat einen externen 10-kΩ-Pulldown-Widerstand. Solange der Taster gedrückt ist, fährt der Servo auf 90 Grad, sonst auf 0 Grad.",
+    "dokument": "Arbeitsblatt Taster Praxis",
+    "zeilen": [
+      { "code": "#include <Servo.h>", "kommentar": "Bindet die Servo-Bibliothek ein. Sie erzeugt die Signale für den Servo.", "dokument": "Arbeitsblatt Servomotor" },
+      { "code": "Servo S1;", "kommentar": "Legt einen Servo mit dem Namen S1 an.", "dokument": "Arbeitsblatt Servomotor" },
+      { "code": "int taster = 7;", "kommentar": "Die Variable taster wird angelegt und bekommt den Wert 7 (die Pinnummer des Tasters)." },
+      { "code": "void setup()", "kommentar": "Setup: läuft nur einmal beim Start.", "dokument": "Arbeitsblatt Ampel und PAP" },
+      { "code": "{" },
+      { "code": "  S1.attach(9);", "kommentar": "Der Servo S1 hängt an Pin 9.", "dokument": "Arbeitsblatt Servomotor" },
+      { "code": "  pinMode(taster, INPUT);", "kommentar": "Der Taster-Pin wird ein Eingang ohne internen Widerstand – der Pulldown-Widerstand steckt auf dem Breadboard.", "dokument": "Aufschrieb Taster" },
+      { "code": "  S1.write(0);", "kommentar": "Startposition: Servo auf 0 Grad.", "dokument": "Arbeitsblatt Servomotor" },
+      { "code": "}" },
+      { "code": "void loop()" },
+      { "code": "{", "kommentar": "Öffnet den Loop-Teil." },
+      { "code": "  if (digitalRead(taster) == HIGH)", "kommentar": "Wenn der Taster gedrückt ist (beim Pulldown-Widerstand heißt das HIGH) …", "dokument": "Arbeitsblatt Taster Theorie" },
+      { "code": "  {" },
+      { "code": "    S1.write(90);", "kommentar": "… Servo auf 90 Grad drehen", "dokument": "Arbeitsblatt Servomotor" },
+      { "code": "    delay(1000);", "kommentar": "und 1 Sekunde warten." },
+      { "code": "  }" },
+      { "code": "  else", "kommentar": "Sonst (Taster nicht gedrückt) …" },
+      { "code": "  {" },
+      { "code": "    S1.write(0);", "kommentar": "… Servo zurück auf 0 Grad.", "dokument": "Arbeitsblatt Servomotor" },
+      { "code": "  }" },
+      { "code": "}", "kommentar": "Schließt den Loop-Teil." }
+    ]
   }
 ];

@@ -80,17 +80,20 @@ var Pruefung = (function () {
   // "fremd" beschreibt Pins der jeweils anderen Variante (z. B. ENA, wenn
   // der Motor an Klemme B hängt) und den Hinweis, falls dort ein Kabel steckt.
   function varianten(aufgabe) {
-    var liste = [{ anforderungen: [], fremd: [] }];
+    var liste = [{ anforderungen: [], fremd: [], pruefer: [] }];
     aufgabe.bausteine.forEach(function (name) {
       var bs = DATEN.bausteine[name];
       if (!bs) throw new Error("Baustein '" + name + "' fehlt in aufgaben.js");
+      // Bausteine mit eigener Prüfung (z. B. vierbeiniger Taster auf dem Breadboard)
+      if (bs.pruefer) { liste.forEach(function (v) { v.pruefer.push(bs.pruefer); }); return; }
       var vs = bs.varianten || [{ anforderungen: bs.anforderungen }];
       var neu = [];
       liste.forEach(function (bisher) {
         vs.forEach(function (v) {
           neu.push({
             anforderungen: bisher.anforderungen.concat(v.anforderungen),
-            fremd: bisher.fremd.concat(v.fremd ? [v.fremd] : [])
+            fremd: bisher.fremd.concat(v.fremd ? [v.fremd] : []),
+            pruefer: bisher.pruefer.slice()
           });
         });
       });
@@ -173,6 +176,11 @@ var Pruefung = (function () {
       }
     });
 
+    // 1b. Bausteine mit eigener Prüfung
+    (variante.pruefer || []).forEach(function (name) {
+      SONDERPRUEFUNG[name](kabel, melde, benutzt);
+    });
+
     // 2. Mehrfach belegte Anschlüsse
     Object.keys(amPin).forEach(function (s) {
       var dort = amPin[s];
@@ -250,6 +258,12 @@ var Pruefung = (function () {
     DATEN.pins.arduino.pins.forEach(function (p) {
       if (p.art === "gnd") vereine("arduino." + p.id, "arduino.GND_1");
     });
+    // Innen verbundene Löcher (Breadboard-Spalten, Taster-Beine a-c und b-d)
+    Object.keys(DATEN.pins).forEach(function (b) {
+      (DATEN.pins[b].verbunden || []).forEach(function (gruppe) {
+        for (var i = 1; i < gruppe.length; i++) vereine(b + "." + gruppe[0], b + "." + gruppe[i]);
+      });
+    });
     kabel.forEach(function (k) { vereine(k.a, k.b); });
     var netze = {};
     Object.keys(eltern).forEach(function (s) {
@@ -293,6 +307,119 @@ var Pruefung = (function () {
     var meldungen = aufbereiten(aufgabe, beste || []);
     return { geloest: meldungen.length === 0, meldungen: meldungen };
   }
+
+  // ===================================================================
+  // Eigene Prüfungen
+  // ===================================================================
+  var SONDERPRUEFUNG = {
+
+    // Vierbeiniger Taster auf dem Breadboard mit externem 10-kΩ-Pulldown.
+    // Richtig ist: Eine Seite des Tasters (Beine a+c bzw. b+d) bekommt 5V,
+    // die andere Seite geht an einen Digitalpin UND über den Widerstand an GND.
+    taster4: function (kabel, melde, benutzt) {
+      var BB = "breadboard", W = "widerstand";
+      // Alle Kabel am Breadboard oder am Widerstand prüft diese Funktion
+      var bbKabel = kabel.filter(function (k) {
+        return [k.a, k.b].some(function (s) { var b = Pins.bauteil(s); return b === BB || b === W; });
+      });
+      bbKabel.forEach(function (k) { benutzt[k.id] = true; });
+      function ids(liste) { return liste.map(function (k) { return k.id; }); }
+
+      // Netze inkl. Breadboard-Spalten und Taster-Innenverbindungen (nicht gedrückt)
+      var netze = bildeNetze(kabel), netzVon = {};
+      Object.keys(netze).forEach(function (w) { netze[w].pins.forEach(function (s) { netzVon[s] = w; }); });
+      function netz(s) { return netzVon[s] || ("allein:" + s); }
+      function pinsIn(w) { return (netze[w] || { pins: [] }).pins; }
+      function kabelIn(w) {
+        return bbKabel.filter(function (k) { return netz(k.a) === w || netz(k.b) === w; });
+      }
+      function arduinoArt(w, test) {
+        return pinsIn(w).filter(function (s) { if (Pins.bauteil(s) !== "arduino") return false; var p = Pins.daten(s); return p && test(p); });
+      }
+      function hat5V(w) { return arduinoArt(w, function (p) { return p.id === "5V"; }).length > 0; }
+      function andereSpannung(w) { return arduinoArt(w, function (p) { return p.art === "plus" && p.id !== "5V"; }); }
+      function hatGnd(w) { return arduinoArt(w, function (p) { return p.art === "gnd"; }).length > 0; }
+      function signalPins(w) { return arduinoArt(w, function (p) { return p.art === "digital" || p.art === "analog"; }); }
+
+      var L = netz(BB + ".E8"), R = netz(BB + ".E10");
+      var seiten = [L, R];
+
+      if (!bbKabel.length) { melde("fehlt", "taster4_fehlt", {}, [], []); return; }
+
+      // Widerstandsbeine müssen ins Breadboard
+      ["links", "rechts"].forEach(function (bein) {
+        kabel.forEach(function (k) {
+          var anderes = k.a === W + "." + bein ? k.b : k.b === W + "." + bein ? k.a : null;
+          if (anderes && Pins.bauteil(anderes) !== BB) melde("fehler", "widerstand_direkt", { ziel: Pins.langerName(anderes) }, [k.id], []);
+        });
+      });
+
+      // Beide Seiten des Tasters dauerhaft verbunden?
+      if (L === R) {
+        melde("fehler", "taster4_ueberbrueckt", {}, ids(kabelIn(L)), []);
+        return;
+      }
+
+      // Welche Seite hat Spannung?
+      var plus = seiten.filter(hat5V);
+      var falscheSpannung = seiten.filter(function (w) { return andereSpannung(w).length; });
+      if (!plus.length && falscheSpannung.length) {
+        melde("fehler", "taster4_falsche_spannung", { pin: Pins.langerName(andereSpannung(falscheSpannung[0])[0]) }, ids(kabelIn(falscheSpannung[0])), []);
+        return;
+      }
+      if (!plus.length) {
+        // Typisch: wie beim zweibeinigen Taster an GND und Pin angeschlossen
+        var mitGnd = seiten.filter(hatGnd), mitPin = seiten.filter(function (w) { return signalPins(w).length; });
+        if (mitGnd.length && mitPin.length && mitGnd[0] !== mitPin[0]) {
+          melde("fehler", "taster4_wie_zweibeinig", {}, ids(kabelIn(mitGnd[0])), []);
+        } else {
+          melde("fehlt", "taster4_5v_fehlt", {}, [], [BB + ".E8", BB + ".E10"]);
+        }
+        return;
+      }
+      var plusSeite = plus[0], pinSeite = plusSeite === L ? R : L;
+      // 5V und GND auf derselben Seite: Kurzschluss (meldet die allgemeine Prüfung)
+      if (hatGnd(plusSeite)) return;
+
+      // 5V und Pin auf derselben Seite (nicht diagonal)?
+      if (signalPins(plusSeite).length) {
+        melde("fehler", "taster4_nicht_diagonal", { pin: Pins.langerName(signalPins(plusSeite)[0]) }, ids(kabelIn(plusSeite)), []);
+        return;
+      }
+      var pins = signalPins(pinSeite);
+      if (!pins.length) {
+        melde("fehlt", "taster4_pin_fehlt", {}, [], [pinSeite === L ? BB + ".E8" : BB + ".E10"]);
+      } else {
+        var p = Pins.daten(pins[0]);
+        if (p.id === "D0" || p.id === "D1") melde("fehler", "pin_rx_tx", { ziel: Pins.langerName(pins[0]) }, ids(kabelIn(pinSeite)), []);
+        else if (p.art === "analog") melde("fehler", "pin_analog", { ziel: Pins.langerName(pins[0]) }, ids(kabelIn(pinSeite)), []);
+      }
+      if (hatGnd(pinSeite)) {
+        melde("fehler", "taster4_gnd_direkt", {}, ids(kabelIn(pinSeite)), []);
+        return;
+      }
+
+      // Der Pulldown-Widerstand: ein Bein auf der Pin-Seite, eins an GND
+      var wl = W + ".links", wr = W + ".rechts";
+      var steckt = function (s) { return kabel.some(function (k) { return (k.a === s && Pins.bauteil(k.b) === BB) || (k.b === s && Pins.bauteil(k.a) === BB); }); };
+      if (!steckt(wl) && !steckt(wr)) { melde("fehlt", "widerstand_fehlt", {}, [], [wl, wr]); return; }
+      if (!steckt(wl) || !steckt(wr)) { melde("fehlt", "widerstand_bein_fehlt", {}, [], [steckt(wl) ? wr : wl]); return; }
+      var nl = netz(wl), nr = netz(wr);
+      var wKabel = bbKabel.filter(function (k) { return [k.a, k.b].indexOf(wl) >= 0 || [k.a, k.b].indexOf(wr) >= 0; });
+      if (nl === nr) { melde("fehler", "widerstand_gleiche_reihe", {}, ids(wKabel), []); return; }
+      var amPin = nl === pinSeite ? wl : nr === pinSeite ? wr : null;
+      if (!amPin) { melde("fehler", "widerstand_nicht_am_pin", {}, ids(wKabel), []); return; }
+      var anderesNetz = amPin === wl ? nr : nl;
+      if (anderesNetz === plusSeite || hat5V(anderesNetz)) { melde("fehler", "widerstand_pullup", {}, ids(wKabel), []); return; }
+      if (!hatGnd(anderesNetz)) { melde("fehlt", "widerstand_gnd_fehlt", {}, [], [amPin === wl ? wr : wl]); return; }
+
+      // Kabel am Breadboard, die zu keinem dieser Netze gehören
+      var gebraucht = [L, R, nl, nr];
+      bbKabel.forEach(function (k) {
+        if (gebraucht.indexOf(netz(k.a)) < 0) melde("fehler", "kabel_nicht_gebraucht", { kabel: kabelText(k) }, [k.id], []);
+      });
+    }
+  };
 
   return { pruefe: pruefe, passt: passt, bildeNetze: bildeNetze };
 })();

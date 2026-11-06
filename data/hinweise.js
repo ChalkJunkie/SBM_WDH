@@ -182,6 +182,68 @@ DATEN.hinweise = {
     "dokument": "Arbeitsblatt DC-Motor Theorie"
   },
 
+  // ---------- Vierbeiniger Taster mit Pulldown-Widerstand ----------
+  "taster4_fehlt": {
+    "text": "Der vierbeinige Taster ist noch nicht angeschlossen.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "taster4_ueberbrueckt": {
+    "text": "Die linke und die rechte Seite des Tasters sind direkt miteinander verbunden. Dann gilt der Taster immer als gedrückt.",
+    "dokument": "Arbeitsblatt Taster Theorie"
+  },
+  "taster4_falsche_spannung": {
+    "text": "Der Taster hängt an {pin}. Beim vierbeinigen Taster nehmen wir 5V.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "taster4_wie_zweibeinig": {
+    "text": "Du hast den Taster wie einen zweibeinigen Taster an GND und einen Pin angeschlossen. Beim vierbeinigen Taster kommt ein Bein an 5V, das diagonale Bein an den Pin, und der Pin bekommt einen externen 10-kΩ-Widerstand nach GND.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "taster4_5v_fehlt": {
+    "text": "Ein Bein des Tasters braucht noch 5V.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "taster4_nicht_diagonal": {
+    "text": "{pin} und 5V hängen an derselben Seite des Tasters (die Beine a und c bzw. b und d sind innen verbunden). Dann ist der Pin immer HIGH. Schließe diagonal an.",
+    "dokument": "Arbeitsblatt Taster Theorie"
+  },
+  "taster4_pin_fehlt": {
+    "text": "Das diagonale Bein des Tasters ist noch mit keinem Digitalpin verbunden.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "taster4_gnd_direkt": {
+    "text": "Die Seite des Tasters mit dem Pin hängt direkt an GND. Beim Drücken gäbe das einen Kurzschluss von 5V nach GND. Dazwischen gehört der 10-kΩ-Widerstand.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "widerstand_direkt": {
+    "text": "Ein Bein des Widerstands steckt an {ziel}. Der Widerstand wird mit beiden Beinen ins Breadboard gesteckt.",
+    "dokument": "Arbeitsblatt Ampel und PAP"
+  },
+  "widerstand_fehlt": {
+    "text": "Der 10-kΩ-Widerstand fehlt noch.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "widerstand_bein_fehlt": {
+    "text": "Ein Bein des Widerstands steckt noch nicht im Breadboard.",
+    "dokument": "Arbeitsblatt Ampel und PAP"
+  },
+  "widerstand_gleiche_reihe": {
+    "text": "Beide Beine des Widerstands stecken in derselben Reihe. Die Löcher einer Reihe sind leitend verbunden, so wirkt der Widerstand nicht.",
+    "dokument": "Arbeitsblatt Ampel und PAP"
+  },
+  "widerstand_nicht_am_pin": {
+    "text": "Der Widerstand ist nicht mit der Seite des Tasters verbunden, die zum Pin führt. Der Pulldown-Widerstand gehört zwischen Pin und GND.",
+    "dokument": "Aufschrieb Taster"
+  },
+  "widerstand_pullup": {
+    "text": "Der Widerstand verbindet den Pin mit 5V (Pullup). Im Unterricht haben wir beim vierbeinigen Taster einen Pulldown-Widerstand verwendet: zwischen Pin und GND.",
+    "dokument": "Arbeitsblatt Taster Theorie"
+  },
+  "widerstand_gnd_fehlt": {
+    "text": "Das zweite Bein des Widerstands ist noch nicht mit GND verbunden.",
+    "dokument": "Aufschrieb Taster"
+  },
+
   // ---------- Allgemein ----------
   "pin_rx_tx": {
     "text": "Ein Kabel steckt an {ziel}. Die Pins 0 und 1 (RX/TX) benutzen wir nicht. Nimm einen Digitalpin von 2 bis 13.",

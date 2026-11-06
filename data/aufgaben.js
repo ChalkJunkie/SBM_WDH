@@ -233,7 +233,13 @@ DATEN.bausteine = {
         "fremd": { "pins": ["treiber.ENB", "treiber.IN3", "treiber.IN4"], "hinweis": "gemischt_a" }
       }
     ]
-  }
+  },
+  // ------------------------------------------------------------------
+  // Vierbeiniger Taster auf dem Breadboard mit externem 10-kΩ-Pulldown.
+  // Diese Prüfung ist fest programmiert (js/pruefung.js, "taster4"):
+  //   eine Seite des Tasters an 5V, die diagonale Seite an einen
+  //   Digitalpin und über den Widerstand an GND.
+  "taster4": { "pruefer": "taster4" }
 };
 
 // Besondere Hinweise für Kabel, die zu keiner Anforderung gehören.
@@ -335,6 +341,21 @@ DATEN.aufgaben = [
     ],
     "sonderregeln": [
       { "anforderung": "motor_enable", "zu": ["arduino.D9", "arduino.D10"], "hinweis": "enable_9_10" }
+    ]
+  },
+  {
+    "id": 6,
+    "titel": "Vierbeiniger Taster und Servo",
+    "auftrag": "Der Servo aus Aufgabe 1 ist schon angeschlossen (helle Kabel). Der vierbeinige Taster steckt schon auf dem Breadboard. Schließe ihn so an, wie ihr es im Unterricht gelernt habt: mit dem 10-kΩ-Widerstand als Pulldown. Die Beine des Widerstands steckst du in Löcher des Breadboards.",
+    "auftragSelbst": "Schließe den Servo an. Der vierbeinige Taster steckt schon auf dem Breadboard: Schließe ihn mit dem 10-kΩ-Widerstand als Pulldown an. Die Beine des Widerstands steckst du in Löcher des Breadboards.",
+    "bauteile": ["arduino", "breadboard", "widerstand", "servo"],
+    "bausteine": ["servo", "taster4"],
+    "vorgaenger": 1,
+    "dokumente": ["Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
+    "vorverkabelt": [
+      ["servo.rot", "arduino.3V3"],
+      ["servo.braun", "arduino.GND_1"],
+      ["servo.orange", "arduino.D9"]
     ]
   }
 ];

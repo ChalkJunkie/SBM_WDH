@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
   <title>Seifenblasenmaschine – Wiederholung</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06g">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06h">
 </head>
 <body class="seite-start">
   <header class="kopf">
@@ -31,6 +31,9 @@
       <h3>Teil B: Fehlersuche</h3>
       <p>In jedem Programm stecken Fehler. Finde die falschen Zeilen.</p>
       <ul class="aufgabenliste" id="liste2b"></ul>
+      <h3>Teil C: Zwei- oder vierbeiniger Taster?</h3>
+      <p>Was ist beim zweibeinigen und beim vierbeinigen Taster anders, beim Anschluss und im Code?</p>
+      <ul class="aufgabenliste" id="liste2c"></ul>
     </section>
 
     <section class="bereich">
@@ -42,10 +45,11 @@
   </main>
 
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06g"></script>
-  <script src="data/aufgaben.js?v=2026-11-06g"></script>
-  <script src="data/code.js?v=2026-11-06g"></script>
-  <script src="data/fehlersuche.js?v=2026-11-06g"></script>
+  <script src="js/gemeinsam.js?v=2026-11-06h"></script>
+  <script src="data/aufgaben.js?v=2026-11-06h"></script>
+  <script src="data/code.js?v=2026-11-06h"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06h"></script>
+  <script src="data/vergleich.js?v=2026-11-06h"></script>
   <script>
     // Liste der Verdrahtungsaufgaben mit Sternen
     (function () {
@@ -64,7 +68,8 @@
       }
       fuelle("liste1", DATEN.aufgaben, "verkabeln", "verkabeln.html?aufgabe=");
       fuelle("liste2a", DATEN.programme, "zuordnen", "zuordnen.html?programm=");
-      fuelle("liste2b", DATEN.fehlersuche, "fehlersuche3", "fehlersuche.html?aufgabe=");
+      fuelle("liste2b", DATEN.fehlersuche, "fehlersuche4", "fehlersuche.html?aufgabe=");
+      fuelle("liste2c", DATEN.vergleich, "vergleich", "vergleich.html?uebung=");
       document.getElementById("version").textContent = "Version " + SPIEL_VERSION;
       document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " von " + Fortschritt.anzahlAufgaben() + " Sternen";
       // Alles geschafft (z. B. schon vor einem Update)? Dann jetzt gratulieren.

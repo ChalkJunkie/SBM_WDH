@@ -363,3 +363,42 @@ body.zieht-karte { cursor: grabbing; }
 .codeliste.mit-kommentaren .erklaerung { grid-column: 3; margin-top: 0; }
 @media (max-width: 760px) { .codeliste.mit-kommentaren .erklaerung { grid-column: 2; } }
 .zf-tipp { color: var(--info); flex-basis: 100%; }
+
+/* =====================================================================
+   Bereich 2, Teil C: Zwei- oder vierbeinig? (vergleich.html)
+   ===================================================================== */
+.seite-vergleich { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.vergleich { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; display: flex; flex-direction: column; gap: .8rem; max-width: 1100px; width: 100%; margin: 0 auto; }
+.vergleich > * { flex-shrink: 0; }
+.kartenstapel { display: flex; flex-wrap: wrap; gap: .5rem; min-height: 60px; padding: .6rem; border: 2px dashed var(--rand); border-radius: 12px; background: var(--flaeche); }
+.sortkarte {
+  min-height: var(--tippflaeche); padding: .5rem .7rem; border-radius: 10px; border: 2px solid var(--rand);
+  background: #f7f6f2; font: inherit; font-size: .98rem; text-align: left; cursor: pointer; touch-action: manipulation; max-width: 100%;
+}
+.sortkarte.gewaehlt { border: 4px solid var(--akzent); background: var(--info-hell); }
+.sortkarte.richtig { border-color: var(--richtig); background: var(--richtig-hell); }
+.sortkarte.falsch { border-color: var(--fehler); background: var(--fehler-hell); }
+.sortkarte.richtig .slot-symbol { color: var(--richtig); }
+.sortkarte.falsch .slot-symbol { color: var(--fehler); }
+.code-klein { font: 15px/1.4 ui-monospace, Menlo, monospace; background: #1f2430; color: #e8e8e8; padding: .15rem .4rem; border-radius: 6px; }
+.spalten { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.spalte { min-height: 220px; padding: .7rem; border-radius: 14px; border: 3px solid var(--rand); background: var(--flaeche); display: flex; flex-direction: column; gap: .5rem; cursor: pointer; }
+.spalte-kopf { display: flex; align-items: center; gap: .7rem; }
+.spalte-kopf img { height: 64px; width: auto; }
+.spalte-karten { display: flex; flex-direction: column; gap: .45rem; }
+.spalte-hier { margin-top: auto; padding: .7rem; border: 2px dashed var(--akzent); border-radius: 10px; color: var(--akzent); text-align: center; font-weight: 600; }
+.quizfrage { padding: .8rem; border-radius: 14px; border: 2px solid var(--rand); background: var(--flaeche); }
+.quizfrage.richtig { border-color: var(--richtig); }
+.quizfrage.falsch { border-color: var(--fehler); }
+.quizfrage h2 { font-size: 1.05rem; }
+.quizcode { margin: 0 0 .6rem; padding: .6rem .8rem; border-radius: 10px; background: #1f2430; color: #e8e8e8; font: 16px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+.quizantworten { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .5rem; margin-bottom: .5rem; }
+.quizantwort { justify-content: flex-start; text-align: left; gap: .7rem; font-weight: 400; }
+.quizantwort img { height: 52px; width: auto; flex: 0 0 auto; }
+.quiz-ohne-bild { width: 40px; height: 52px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--text-leise); flex: 0 0 auto; }
+.quizantwort.gewaehlt-richtig { border: 3px solid var(--richtig); background: var(--richtig-hell); }
+.quizantwort.gewaehlt-falsch { border: 3px solid var(--fehler); background: var(--fehler-hell); }
+.quizantwort:disabled { cursor: default; }
+@media (max-width: 640px) { .spalten { grid-template-columns: 1fr; } }
+.quizantwort:disabled { opacity: .5; }
+.quizantwort.gewaehlt-richtig:disabled { opacity: 1; }
