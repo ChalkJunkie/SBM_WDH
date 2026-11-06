@@ -132,21 +132,48 @@ var PAP = (function () {
     return { unten: y, maxX: cx, box: { oben: y, hoehe: 0, links: cx, rechts: cx } };
   }
 
-  // Zeichnet den ganzen PAP in den Behälter
+  // Zeichnet den ganzen PAP in den Behälter. Probiert breite und schmale
+  // Kästen aus und nimmt die Form, bei der die Schrift am größten wird
+  // (Querformat: eher breit, Hochformat: eher schmal und hoch).
+  var FORMEN = [
+    { breite: 230, zeichen: 28, spalte: 260 },
+    { breite: 190, zeichen: 22, spalte: 225 },
+    { breite: 160, zeichen: 18, spalte: 195 }
+  ];
   function zeichne(behaelter, schritte) {
-    var svg = el("svg", { "class": "pap", role: "img", "aria-label": "Programmablaufplan" });
-    var defs = el("defs");
-    var m = el("marker", { id: "pap-spitze", markerWidth: 10, markerHeight: 10, refX: 8, refY: 5, orient: "auto" });
-    m.appendChild(el("path", { d: "M0,0 L10,5 L0,10 z", "class": "pap-spitze" }));
-    defs.appendChild(m); svg.appendChild(defs);
-    var g = el("g");
-    svg.appendChild(g);
-    var cx = BREITE / 2 + 40;
-    var r = folge(g, schritte, cx, 10, false);
-    svg.setAttribute("viewBox", "0 0 " + (r.maxX + 12) + " " + (r.unten + 12));
+    var platzB = behaelter.clientWidth || 400, platzH = behaelter.clientHeight || 500;
+    var beste = null;
+    FORMEN.forEach(function (f) {
+      BREITE = f.breite; ZEICHEN = f.zeichen; SPALTE = f.spalte;
+      var svg = el("svg", { "class": "pap", role: "img", "aria-label": "Programmablaufplan" });
+      var defs = el("defs");
+      var m = el("marker", { id: "pap-spitze", markerWidth: 10, markerHeight: 10, refX: 8, refY: 5, orient: "auto" });
+      m.appendChild(el("path", { d: "M0,0 L10,5 L0,10 z", "class": "pap-spitze" }));
+      defs.appendChild(m); svg.appendChild(defs);
+      var g = el("g");
+      svg.appendChild(g);
+      var r = folge(g, schritte, BREITE / 2 + 40, 10, false);
+      var b = r.maxX + 12, h = r.unten + 12;
+      svg.setAttribute("viewBox", "0 0 " + b + " " + h);
+      var massstab = Math.min(platzB / b, platzH / h);
+      if (!beste || massstab > beste.massstab + 0.01) beste = { svg: svg, massstab: massstab };
+    });
     // Größe passt sich dem Platz an (Seitenverhältnis bleibt), siehe CSS .pap
+    // nicht riesig werden lassen (höchstens 130 %)
+    var vb = beste.svg.getAttribute("viewBox").split(" ");
+    beste.svg.style.maxWidth = Math.round(vb[2] * 1.3) + "px";
+    beste.svg.style.maxHeight = Math.round(vb[3] * 1.3) + "px";
     behaelter.innerHTML = "";
-    behaelter.appendChild(svg);
+    behaelter.appendChild(beste.svg);
+    // Beim Drehen des iPads neu entscheiden
+    if (!behaelter._papHoerer) {
+      behaelter._papHoerer = true;
+      var timer = null;
+      window.addEventListener("resize", function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () { zeichne(behaelter, schritte); }, 200);
+      });
+    }
   }
 
   return { zeichne: zeichne };

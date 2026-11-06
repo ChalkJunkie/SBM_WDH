@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Vom Home-Bildschirm gestartet: ohne Safari-Leisten (wie eine App) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Seifenblasen">
+  <title>Genau lesen – Seifenblasenmaschine</title>
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06j">
+</head>
+<body class="seite-lesen">
+
+  <header class="kopf">
+    <a class="knopf" href="index.html">← Übersicht</a>
+    <h1 id="titel">Genau lesen</h1>
+    <nav class="aufgabenwahl" id="aufgabenwahl" aria-label="Aufgabe wählen"></nav>
+  </header>
+
+  <main class="lesen-spiel">
+    <!-- Links: die Aufgabenstellung wie in einer Klassenarbeit -->
+    <section class="lesen-blatt" id="blatt" aria-label="Aufgabenstellung"></section>
+
+    <!-- Rechts: Fragen zur Aufgabenstellung, darunter die Knöpfe -->
+    <section class="lesen-rechts" aria-label="Fragen">
+      <div class="lesen-fragen" id="fragen"></div>
+      <footer class="fussleiste">
+        <div id="zusammenfassung" class="zusammenfassung" aria-live="polite"></div>
+        <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
+        <button type="button" class="knopf haupt" id="pruefen">✔ Prüfen</button>
+      </footer>
+    </section>
+  </main>
+
+  <script>window.DATEN = {};</script>
+  <script src="js/gemeinsam.js?v=2026-11-06j"></script>
+  <script src="data/aufgaben.js?v=2026-11-06j"></script>
+  <script src="data/code.js?v=2026-11-06j"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06j"></script>
+  <script src="data/vergleich.js?v=2026-11-06j"></script>
+  <script src="data/lesen.js?v=2026-11-06j"></script>
+  <script src="js/lesen.js?v=2026-11-06j"></script>
+</body>
+</html>

@@ -11,7 +11,7 @@
 // Versionsnummer des Spiels. Steht auch hinter allen Dateinamen in den
 // HTML-Dateien (?v=...), damit der Browser nach einem Update keine alten
 // Dateien aus dem Zwischenspeicher mischt. Wird auf der Startseite angezeigt.
-var SPIEL_VERSION = "2026-11-06i";
+var SPIEL_VERSION = "2026-11-06j";
 
 // Name, unter dem alles im localStorage abgelegt wird.
 var SPEICHER_PRAEFIX = "seifenblasen_";
@@ -64,14 +64,15 @@ var Fortschritt = {
     Speicher.schreiben("fortschritt", f);
   },
   // Alle Aufgaben des Spiels: [Bereichsname, Liste der IDs]
-  // (dafür müssen aufgaben.js, code.js und fehlersuche.js geladen sein)
+  // (dafür müssen aufgaben.js, code.js, fehlersuche.js, vergleich.js und lesen.js geladen sein)
   liste: function () {
     function ids(l) { return (l || []).map(function (a) { return a.id; }); }
     return [
       ["verkabeln", ids(DATEN.aufgaben)],
       ["zuordnen", ids(DATEN.programme)],
       ["fehlersuche4", ids(DATEN.fehlersuche)],
-      ["vergleich", ids(DATEN.vergleich)]
+      ["vergleich", ids(DATEN.vergleich)],
+      ["lesen", ids(DATEN.lesen)]
     ];
   },
   // Sterne nur für Aufgaben, die es (noch) gibt
@@ -105,7 +106,7 @@ function pruefeGlueckwunsch() {
     titel: "🎉 Herzlichen Glückwunsch!",
     html: '<p class="sternregen" aria-hidden="true">' + sterne + "</p>" +
       "<p><strong>Du hast alle " + n + " Aufgaben gelöst und jeden einzelnen Stern gesammelt!</strong></p>" +
-      "<p>Du kannst Servo, Taster und DC-Motor richtig verkabeln, du verstehst die Programme und du findest Fehler im Code. Das ist eine richtig starke Leistung!</p>" +
+      "<p>Du kannst Servo, Taster und DC-Motor richtig verkabeln, du verstehst die Programme, du findest Fehler im Code und du liest Aufgaben genau. Das ist eine richtig starke Leistung!</p>" +
       "<p>Viel Erfolg bei der Klassenarbeit und beim Bau deiner Seifenblasenmaschine!</p>",
     knoepfe: [
       { text: "Danke! 😊", haupt: true },

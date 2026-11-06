@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
   <title>Fehlersuche – Seifenblasenmaschine</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06i">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06j">
 </head>
 <body class="seite-code seite-fehlersuche">
 
@@ -27,28 +27,32 @@
     </section>
 
     <!-- Rechts: der Code mit Fehlern -->
-    <section class="code-bereich fs-rechts" aria-label="Programmcode">
-      <p class="auftrag"><strong id="anzahl"></strong> Tippe die falschen Zeilen an (nochmal antippen hebt die Markierung auf). Fehlt eine ganze Zeile, tippe die Zeile an, <strong>vor</strong> der sie fehlt.</p>
-      <ol class="codeliste" id="codeliste"></ol>
+    <!-- Die Fußleiste ist nur so breit wie der Code: links bleibt mehr Platz für den PAP -->
+    <section class="fs-rechts" aria-label="Programmcode">
+      <div class="code-bereich">
+        <p class="auftrag"><strong id="anzahl"></strong> Tippe die falschen Zeilen an (nochmal antippen hebt die Markierung auf). Fehlt eine ganze Zeile, tippe die Zeile an, <strong>vor</strong> der sie fehlt.</p>
+        <ol class="codeliste" id="codeliste"></ol>
+      </div>
+
+      <!-- Unten: Knöpfe und kurze Rückmeldung -->
+      <footer class="fussleiste">
+        <div id="zusammenfassung" class="zusammenfassung" aria-live="polite"></div>
+        <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
+        <button type="button" class="knopf haupt" id="pruefen">✔ Prüfen</button>
+      </footer>
     </section>
   </main>
 
-  <!-- Unten: Knöpfe und kurze Rückmeldung -->
-  <footer class="fussleiste">
-    <div id="zusammenfassung" class="zusammenfassung" aria-live="polite"></div>
-    <button type="button" class="knopf" id="neustart">↺ Von vorne</button>
-    <button type="button" class="knopf haupt" id="pruefen">✔ Prüfen</button>
-  </footer>
-
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06i"></script>
-  <script src="data/aufgaben.js?v=2026-11-06i"></script>
-  <script src="data/code.js?v=2026-11-06i"></script>
-  <script src="data/dokumente.js?v=2026-11-06i"></script>
-  <script src="data/fehlersuche.js?v=2026-11-06i"></script>
-  <script src="data/vergleich.js?v=2026-11-06i"></script>
-  <script src="js/codeanzeige.js?v=2026-11-06i"></script>
-  <script src="js/pap.js?v=2026-11-06i"></script>
-  <script src="js/fehlersuche.js?v=2026-11-06i"></script>
+  <script src="js/gemeinsam.js?v=2026-11-06j"></script>
+  <script src="data/aufgaben.js?v=2026-11-06j"></script>
+  <script src="data/code.js?v=2026-11-06j"></script>
+  <script src="data/dokumente.js?v=2026-11-06j"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06j"></script>
+  <script src="data/vergleich.js?v=2026-11-06j"></script>
+  <script src="data/lesen.js?v=2026-11-06j"></script>
+  <script src="js/codeanzeige.js?v=2026-11-06j"></script>
+  <script src="js/pap.js?v=2026-11-06j"></script>
+  <script src="js/fehlersuche.js?v=2026-11-06j"></script>
 </body>
 </html>

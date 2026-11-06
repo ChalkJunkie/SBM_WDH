@@ -354,7 +354,7 @@ body.zieht-karte { cursor: grabbing; }
 .korrektur-code { display: block; margin-top: .25rem; font: 15px/1.4 ui-monospace, Menlo, monospace; }
 .erklaerung .meldung-dokument { color: #3b4a3e; }
 @media (orientation: portrait) {
-  .fs-spiel { grid-template-columns: minmax(230px, 1fr) minmax(0, 1.05fr); }
+  .fs-spiel { grid-template-columns: minmax(230px, 1.2fr) minmax(0, 1fr); }
   .seite-fehlersuche .codeliste { font-size: 13px; }
 }
 
@@ -405,7 +405,7 @@ body.zieht-karte { cursor: grabbing; }
 .quizantwort.gewaehlt-richtig { border: 3px solid var(--richtig); background: var(--richtig-hell); }
 .quizantwort.gewaehlt-falsch { border: 3px solid var(--fehler); background: var(--fehler-hell); }
 .quizantwort:disabled { cursor: default; }
-@media (max-width: 640px) { .spalten { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .spalten { grid-template-columns: 1fr; } .vergleich.sortieren-modus .spalten { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .quizantwort:disabled { opacity: .5; }
 .quizantwort.gewaehlt-richtig:disabled { opacity: 1; }
 
@@ -420,14 +420,58 @@ body.zieht-karte { cursor: grabbing; }
 .sortkarte.geist { position: fixed; z-index: 60; max-width: 360px; pointer-events: none; opacity: .93; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
 .sortkarte.wird-gezogen { opacity: .35; }
 .spalte.ueber, .kartenstapel.ueber { border-color: var(--akzent); background: var(--info-hell); }
-/* Sortieren: Kartenstapel oben (höchstens knapp die Hälfte), die beiden
-   Spalten darunter. Beides bleibt sichtbar, jeder Teil hat bei Bedarf
-   einen eigenen Bildlauf. */
+/* Sortieren: drei Spalten nebeneinander (Stapel, zweibeinig, vierbeinig).
+   Karten werden waagrecht gezogen, senkrecht wischen scrollt die Spalte. */
 .vergleich.sortieren-modus { overflow: hidden; gap: .6rem; padding: .7rem .9rem; }
 .vergleich.sortieren-modus > .auftrag { margin: 0; }
-.vergleich.sortieren-modus .kartenstapel { flex: 0 1 auto; max-height: 46%; overflow-y: auto; -webkit-overflow-scrolling: touch; gap: .4rem; padding: .5rem; }
-.vergleich.sortieren-modus .spalten { flex: 1 1 0; min-height: 190px; }
-.vergleich.sortieren-modus .spalte { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.vergleich.sortieren-modus .spalte-kopf img { height: 48px; }
-.vergleich.sortieren-modus .sortkarte { padding: .4rem .6rem; font-size: .93rem; }
-.vergleich.sortieren-modus .code-klein { font-size: 14px; }
+.vergleich.sortieren-modus .spalten { flex: 1 1 0; min-height: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.vergleich.sortieren-modus .kartenstapel,
+.vergleich.sortieren-modus .spalte { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  display: flex; flex-direction: column; flex-wrap: nowrap; gap: .45rem; padding: .5rem; border-radius: 14px; }
+.vergleich.sortieren-modus .kartenstapel { border: 2px dashed var(--rand); }
+.vergleich.sortieren-modus .spalte-kopf { gap: .5rem; font-size: .92rem; line-height: 1.25; }
+.vergleich.sortieren-modus .spalte-kopf img { height: 40px; }
+.vergleich.sortieren-modus .spalte-karten { gap: .4rem; }
+.vergleich.sortieren-modus .sortkarte { min-height: 40px; padding: .35rem .5rem; font-size: .85rem; line-height: 1.3; touch-action: pan-y; width: 100%; }
+.vergleich.sortieren-modus .code-klein { font-size: 12.5px; padding: .1rem .3rem; word-break: break-word; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.fs-rechts { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.fs-rechts > .code-bereich { flex: 1 1 auto; }
+.fs-rechts > .fussleiste { flex-shrink: 0; }
+.fs-rechts .zusammenfassung { flex: 1 1 100%; }
+.fs-rechts .zusammenfassung:empty { display: none; }
+.fs-rechts .fussleiste .knopf { flex: 1 1 0; min-width: 0; }
+
+/* =====================================================================
+   Bereich 3: Genau lesen (lesen.html)
+   ===================================================================== */
+.seite-lesen { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.lesen-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.lesen-blatt { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; background: var(--flaeche); border-right: 2px solid var(--rand); }
+.lesen-einleitung { margin: 0 0 .7rem; }
+.arbeitsblatt { background: #fff; border: 1px solid var(--rand); border-radius: 6px; padding: 1rem 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; line-height: 1.6; color: #1b1b1b; }
+.arbeitsblatt h2 { font-family: inherit; font-size: 1.1rem; margin: 0 0 .6rem; }
+.arbeitsblatt p { margin: 0 0 .7rem; }
+.arbeitsblatt .teilaufgabe { padding-left: 1.8rem; text-indent: -1.8rem; }
+.arbeitsblatt .teil { display: inline-block; width: 1.8rem; text-indent: 0; }
+.satz { border-radius: 4px; transition: background .3s; }
+.satz.markiert { background: #ffe680; box-shadow: 0 0 0 2px #ffe680; }
+.lesen-rechts { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.lesen-fragen { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; display: flex; flex-direction: column; gap: .7rem; }
+.lesen-fragen > * { flex-shrink: 0; }
+.lesefrage { padding: .7rem .8rem; border-radius: 14px; border: 2px solid var(--rand); background: var(--flaeche); }
+.lesefrage.richtig { border-color: var(--richtig); }
+.lesefrage.falsch, .lesefrage.fehlt { border-color: var(--fehler); }
+.lesefrage h2 { font-size: 1rem; margin: 0 0 .5rem; display: flex; gap: .5rem; align-items: baseline; }
+.lesefrage h2 .nr { flex: 0 0 auto; display: inline-flex; width: 1.6rem; height: 1.6rem; align-items: center; justify-content: center; border-radius: 50%; background: var(--akzent); color: #fff; font-size: .85rem; }
+.lese-antworten { display: flex; flex-direction: column; gap: .4rem; }
+.lese-antwort { justify-content: flex-start; text-align: left; font-weight: 400; }
+.lese-antwort.gewaehlt { border: 3px solid var(--akzent); background: var(--info-hell); font-weight: 600; }
+.lese-rueckmeldung { margin: .5rem 0 0; padding: .45rem .6rem; border-radius: 8px; }
+.lese-rueckmeldung.richtig { background: var(--richtig-hell); color: #12391c; }
+.lese-rueckmeldung.falsch, .lese-rueckmeldung.fehlt { background: var(--fehler-hell); color: #5c1010; }
+.lese-rueckmeldung .klein-knopf { margin-top: .4rem; min-height: 40px; font-size: .9rem; }
+.lesen-rechts > .fussleiste { flex-shrink: 0; }
+.lesen-rechts .zusammenfassung { flex: 1 1 100%; }
+.lesen-rechts .zusammenfassung:empty { display: none; }
+.lesen-rechts .fussleiste .knopf { flex: 1 1 0; min-width: 0; }

@@ -56,11 +56,15 @@
     var reihenfolge = (gespeichert && gespeichert.reihenfolge && gespeichert.reihenfolge.length === uebung.karten.length)
       ? gespeichert.reihenfolge : mische(uebung.karten.map(function (k, i) { return i; }));
     var lage = (gespeichert && gespeichert.lage) || {};   // Kartennummer -> Spalten-ID
+    var wann = (gespeichert && gespeichert.wann) || {};   // Kartennummer -> Zähler (neueste Karte oben)
+    var zaehler = 0;
+    Object.keys(wann).forEach(function (k) { zaehler = Math.max(zaehler, wann[k]); });
+    function lege(k, spalte) { lage[k] = spalte; wann[k] = ++zaehler; }
     var gewaehlt = null, geprueft = false;
     // Stapel oben, Spalten unten: beides ist immer zu sehen (siehe stil.css)
     inhalt.classList.add("sortieren-modus");
 
-    function speichern() { Speicher.schreiben(speicherName, { reihenfolge: reihenfolge, lage: lage }); }
+    function speichern() { Speicher.schreiben(speicherName, { reihenfolge: reihenfolge, lage: lage, wann: wann }); }
 
     function karteHtml(k) {
       var karte = uebung.karten[k];
@@ -75,13 +79,15 @@
     function zeichne() {
       var frei = reihenfolge.filter(function (k) { return !lage[k]; });
       var html = '<p class="auftrag">' + esc(uebung.auftrag) + "</p>";
-      html += '<div class="kartenstapel">' + (frei.length ? frei.map(karteHtml).join("") : '<p class="klein">Alle Karten sind einsortiert. Drücke „Prüfen“.</p>') + "</div>";
       html += '<div class="spalten">';
+      html += '<section class="kartenstapel" aria-label="Noch nicht einsortiert"><div class="spalte-kopf"><strong>Noch nicht einsortiert</strong></div>' +
+        '<div class="spalte-karten">' + (frei.length ? frei.map(karteHtml).join("") : '<p class="klein">Alle Karten sind einsortiert. Drücke „Prüfen“.</p>') + "</div></section>";
       uebung.spalten.forEach(function (sp) {
         html += '<section class="spalte" data-spalte="' + sp.id + '" role="button" aria-label="In Spalte ' + esc(sp.titel) + ' legen">' +
           '<div class="spalte-kopf">' + (sp.bild ? '<img src="' + sp.bild + '" alt="">' : "") +
           "<div><strong>" + esc(sp.titel) + "</strong><br><span class=\"klein\">" + esc(sp.untertitel || "") + "</span></div></div>" +
-          '<div class="spalte-karten">' + reihenfolge.filter(function (k) { return lage[k] === sp.id; }).map(karteHtml).join("") + "</div></section>";
+          '<div class="spalte-karten">' + reihenfolge.filter(function (k) { return lage[k] === sp.id; })
+            .sort(function (a, b) { return (wann[b] || 0) - (wann[a] || 0); }).map(karteHtml).join("") + "</div></section>";
       });
       inhalt.innerHTML = html + "</div>";
     }
@@ -100,7 +106,10 @@
     });
     window.addEventListener("pointermove", function (e) {
       if (!ziehen) return;
-      if (!ziehen.aktiv && Math.hypot(e.clientX - ziehen.x, e.clientY - ziehen.y) > 10) {
+      var dx = e.clientX - ziehen.x, dy = e.clientY - ziehen.y;
+      // Mit dem Finger: nur waagrecht ziehen verschiebt die Karte, senkrecht scrollt
+      if (!ziehen.aktiv && e.pointerType === "touch" && Math.abs(dx) < Math.abs(dy)) return;
+      if (!ziehen.aktiv && Math.hypot(dx, dy) > 10) {
         ziehen.aktiv = true;
         ziehen.geist = ziehen.el.cloneNode(true);
         ziehen.geist.className = "sortkarte geist";
@@ -128,14 +137,19 @@
       letztesZiehen = Date.now();
       document.body.removeChild(z.geist);
       var ziel = zielUnter(e.clientX, e.clientY);
-      if (ziel && ziel.getAttribute("data-spalte")) lage[z.karte] = ziel.getAttribute("data-spalte");
+      if (ziel && ziel.getAttribute("data-spalte")) { if (lage[z.karte] !== ziel.getAttribute("data-spalte")) lege(z.karte, ziel.getAttribute("data-spalte")); }
       else if (ziel) delete lage[z.karte];   // zurück auf den Stapel
       gewaehlt = null; geprueft = false; zusammenfassung.innerHTML = "";
       speichern(); zeichne();
     });
+    // Senkrecht wischen scrollt (touch-action: pan-y). Dann bricht der Browser
+    // das Ziehen mit "pointercancel" ab.
     window.addEventListener("pointercancel", function () {
-      if (ziehen && ziehen.geist) document.body.removeChild(ziehen.geist);
-      ziehen = null; zeichne();
+      if (!ziehen) return;
+      if (ziehen.geist) document.body.removeChild(ziehen.geist);
+      var warAktiv = ziehen.aktiv;
+      ziehen = null;
+      if (warAktiv) zeichne();
     });
 
     // Antippen geht zusätzlich (Karte antippen, dann Spalte antippen)
@@ -145,7 +159,7 @@
       var spalte = e.target.closest ? e.target.closest("[data-spalte]") : null;
       // Ist eine Karte ausgewählt, legt ein Tippen irgendwo in der Spalte sie dort ab
       if (spalte && gewaehlt !== null) {
-        lage[gewaehlt] = spalte.getAttribute("data-spalte");
+        lege(gewaehlt, spalte.getAttribute("data-spalte"));
         gewaehlt = null; geprueft = false; zusammenfassung.innerHTML = "";
         speichern(); zeichne();
         return;
@@ -159,7 +173,7 @@
         return;
       }
       if (spalte && gewaehlt !== null) {
-        lage[gewaehlt] = spalte.getAttribute("data-spalte");
+        lege(gewaehlt, spalte.getAttribute("data-spalte"));
         gewaehlt = null; geprueft = false; zusammenfassung.innerHTML = "";
         speichern(); zeichne();
       }
@@ -181,7 +195,7 @@
 
     document.getElementById("neustart").addEventListener("click", function () {
       reihenfolge = mische(uebung.karten.map(function (k, i) { return i; }));
-      lage = {}; gewaehlt = null; geprueft = false; zusammenfassung.innerHTML = "";
+      lage = {}; wann = {}; gewaehlt = null; geprueft = false; zusammenfassung.innerHTML = "";
       speichern(); zeichne();
     });
 

@@ -21,7 +21,7 @@ DATEN.vergleich = [
   {
     "id": "sortieren",
     "titel": "Zwei- oder vierbeinig?",
-    "auftrag": "Gehört die Karte zum zweibeinigen oder zum vierbeinigen Taster? Ziehe jede Karte in die passende Spalte. Falsch einsortiert? Einfach zurück nach oben oder in die andere Spalte ziehen.",
+    "auftrag": "Gehört die Karte zum zweibeinigen oder zum vierbeinigen Taster? Ziehe jede Karte seitlich in die passende Spalte. Falsch einsortiert? Einfach zurück nach links oder in die andere Spalte ziehen. Neu einsortierte Karten stehen oben.",
     "spalten": [
       { "id": "zwei", "titel": "Zweibeiniger Taster", "untertitel": "interner Widerstand", "bild": "assets/Taster_neu.png" },
       { "id": "vier", "titel": "Vierbeiniger Taster", "untertitel": "externer Widerstand", "bild": "assets/Taster.png" }

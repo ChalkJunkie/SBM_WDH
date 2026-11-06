@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
   <title>Seifenblasenmaschine – Wiederholung</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06i">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06j">
 </head>
 <body class="seite-start">
   <header class="kopf">
@@ -37,6 +37,12 @@
     </section>
 
     <section class="bereich">
+      <h2>Bereich 3: Genau lesen</h2>
+      <p>Lies eine Aufgabe wie in der Klassenarbeit ganz genau und beantworte Fragen dazu. Lösen musst du sie nicht.</p>
+      <ul class="aufgabenliste" id="liste3"></ul>
+    </section>
+
+    <section class="bereich">
       <h2>Fortschritt</h2>
       <p class="klein">Dein Fortschritt wird nur auf diesem Gerät gespeichert.</p>
       <button type="button" class="knopf" id="zuruecksetzen">↺ Fortschritt zurücksetzen</button>
@@ -45,11 +51,12 @@
   </main>
 
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06i"></script>
-  <script src="data/aufgaben.js?v=2026-11-06i"></script>
-  <script src="data/code.js?v=2026-11-06i"></script>
-  <script src="data/fehlersuche.js?v=2026-11-06i"></script>
-  <script src="data/vergleich.js?v=2026-11-06i"></script>
+  <script src="js/gemeinsam.js?v=2026-11-06j"></script>
+  <script src="data/aufgaben.js?v=2026-11-06j"></script>
+  <script src="data/code.js?v=2026-11-06j"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06j"></script>
+  <script src="data/vergleich.js?v=2026-11-06j"></script>
+  <script src="data/lesen.js?v=2026-11-06j"></script>
   <script>
     // Liste der Verdrahtungsaufgaben mit Sternen
     (function () {
@@ -70,6 +77,7 @@
       fuelle("liste2a", DATEN.programme, "zuordnen", "zuordnen.html?programm=");
       fuelle("liste2b", DATEN.fehlersuche, "fehlersuche4", "fehlersuche.html?aufgabe=");
       fuelle("liste2c", DATEN.vergleich, "vergleich", "vergleich.html?uebung=");
+      fuelle("liste3", DATEN.lesen, "lesen", "lesen.html?aufgabe=");
       document.getElementById("version").textContent = "Version " + SPIEL_VERSION;
       document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " von " + Fortschritt.anzahlAufgaben() + " Sternen";
       // Alles geschafft (z. B. schon vor einem Update)? Dann jetzt gratulieren.

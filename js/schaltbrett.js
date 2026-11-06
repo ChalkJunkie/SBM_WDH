@@ -492,6 +492,7 @@ Schaltbrett.prototype.zeichneKabel = function () {
   var widerstaende = [];
   this.kabel.forEach(function (k) {
     if (k.widerstand) { widerstaende.push(k); return; }
+    if (k.a === "batterie.stecker" || k.b === "batterie.stecker") { self._zeichneBatteriekabel(k, m.kabel[k.id]); return; }
     var a = self.pinPosition(k.a), b = self.pinPosition(k.b);
     var pfad = Kabelwege.pfad(self.routen[k.id].punkte);
     var g = svgElement("g", { "class": "kabel" + (k.gesperrt ? " gesperrt" : "") + (m.kabel[k.id] ? " falsch" : "") });
@@ -545,6 +546,55 @@ Schaltbrett.prototype._zeichneWiderstand = function (k, marke) {
   this.ebeneKabel.appendChild(g);
   if (marke) this._marke({ x: mx, y: my - 24 }, marke, "falsch");
 };
+
+// Batterie-Adapterkabel: rote und schwarze Ader nebeneinander, am anderen
+// Ende ein Hohlstecker, der in die Strombuchse des Arduino passt.
+Schaltbrett.prototype._zeichneBatteriekabel = function (k, marke) {
+  var pk = this.routen[k.id].punkte.slice();
+  if (k.a !== "batterie.stecker") pk.reverse();      // pk beginnt an der Batterie
+  var ende = pk[pk.length - 1], vor = pk[pk.length - 2];
+  var lang = Math.hypot(ende.x - vor.x, ende.y - vor.y) || 1;
+  var u = { x: (ende.x - vor.x) / lang, y: (ende.y - vor.y) / lang };
+  var SPITZE = 18, GRIFF = 44;
+  // Das Kabel endet am Griff des Steckers
+  var griffAnfang = { x: ende.x - u.x * (SPITZE + GRIFF), y: ende.y - u.y * (SPITZE + GRIFF) };
+  var kabelPk = pk.slice(0, -1).concat([lang > SPITZE + GRIFF ? griffAnfang : vor]);
+  var mitte = Kabelwege.pfad(pk);
+  var g = svgElement("g", { "class": "kabel batteriekabel" + (k.gesperrt ? " gesperrt" : "") + (marke ? " falsch" : "") });
+  var farbe = function (f) { return k.gesperrt ? pastell(f) : f; };
+  g.appendChild(svgElement("path", { d: Kabelwege.pfad(kabelPk).d, "class": "kabel-rand", style: "stroke-width:13px" }));
+  g.appendChild(svgElement("path", { d: Kabelwege.pfad(versetzt(kabelPk, 3)).d, "class": "kabel-farbe", stroke: farbe("#d32020"), style: "stroke-width:5.5px" }));
+  g.appendChild(svgElement("path", { d: Kabelwege.pfad(versetzt(kabelPk, -3)).d, "class": "kabel-farbe", stroke: farbe("#1e1e1e"), style: "stroke-width:5.5px" }));
+  if (marke) g.appendChild(svgElement("path", { d: Kabelwege.pfad(kabelPk).d, "class": "kabel-falsch-muster" }));
+  // Hohlstecker: schwarzer Griff mit Rillen, silberne Spitze
+  var winkel = Math.atan2(u.y, u.x) * 180 / Math.PI;
+  var st = svgElement("g", { transform: "translate(" + ende.x + " " + ende.y + ") rotate(" + winkel + ")" });
+  st.appendChild(svgElement("rect", { x: -SPITZE - GRIFF, y: -10, width: GRIFF, height: 20, rx: 5, fill: farbe("#1e1e1e"), stroke: "rgba(0,0,0,.6)", "stroke-width": 1.5 }));
+  for (var i = 0; i < 4; i++) {
+    st.appendChild(svgElement("rect", { x: -SPITZE - GRIFF + 5 + i * 6, y: -11.5, width: 3, height: 23, rx: 1, fill: farbe("#3a3a3a") }));
+  }
+  st.appendChild(svgElement("rect", { x: -SPITZE, y: -6.5, width: SPITZE, height: 13, rx: 2, fill: "#c9c9c9", stroke: "#7d7d7d", "stroke-width": 1.2 }));
+  st.appendChild(svgElement("rect", { x: -SPITZE + 2, y: -2, width: SPITZE - 4, height: 2, fill: "#f2f2f2" }));
+  g.appendChild(st);
+  g.appendChild(svgElement("path", { d: mitte.d, "class": "kabel-treffer", "data-kabel": k.id }));
+  this.ebeneKabel.appendChild(g);
+  if (marke) this._marke(mitte.mitte, marke, "falsch");
+};
+
+// Linienzug seitlich verschieben (für zweiadrige Kabel). Bei rechtwinkligen
+// Knicken ergibt die Summe der beiden Normalen genau die richtige Ecke.
+function versetzt(punkte, d) {
+  var n = [];
+  for (var i = 1; i < punkte.length; i++) {
+    var dx = punkte[i].x - punkte[i - 1].x, dy = punkte[i].y - punkte[i - 1].y, l = Math.hypot(dx, dy) || 1;
+    n.push({ x: dy / l, y: -dx / l });
+  }
+  return punkte.map(function (p, i) {
+    var a = n[Math.max(0, i - 1)], b = n[Math.min(n.length - 1, i)];
+    var v = (i === 0 || i === punkte.length - 1 || a.x * b.x + a.y * b.y > 0.99) ? (i === 0 ? b : a) : { x: a.x + b.x, y: a.y + b.y };
+    return { x: p.x + v.x * d, y: p.y + v.y * d };
+  });
+}
 
 // Vorgegebene Kabel: dieselbe Farbe, nur heller (Pastellton)
 function pastell(farbe) {

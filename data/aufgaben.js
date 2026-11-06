@@ -276,6 +276,22 @@ DATEN.aufgaben = [
   },
   {
     "id": 2,
+    "titel": "Vierbeiniger Taster und Servo",
+    "auftrag": "Der Servo aus Aufgabe 1 ist schon angeschlossen (helle Kabel). Der vierbeinige Taster steckt schon auf dem Breadboard. Schließe ihn so an, wie ihr es im Unterricht gelernt habt: mit dem 10-kΩ-Widerstand als Pulldown. Den Widerstand steckst du mit „Widerstand einsetzen“ direkt ins Breadboard.",
+    "auftragSelbst": "Schließe den Servo an. Der vierbeinige Taster steckt schon auf dem Breadboard: Schließe ihn mit dem 10-kΩ-Widerstand als Pulldown an. Den Widerstand steckst du mit „Widerstand einsetzen“ direkt ins Breadboard.",
+    "bauteile": ["arduino", "breadboard", "servo"],
+    "widerstand": true,
+    "bausteine": ["servo", "taster4"],
+    "vorgaenger": 1,
+    "dokumente": ["Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
+    "vorverkabelt": [
+      ["servo.rot", "arduino.3V3"],
+      ["servo.braun", "arduino.GND_1"],
+      ["servo.orange", "arduino.D9"]
+    ]
+  },
+  {
+    "id": 3,
     "titel": "Servo und Taster",
     "auftrag": "Der Servo aus Aufgabe 1 ist schon angeschlossen (helle Kabel). Schließe zusätzlich den Taster so an, dass du ihn mit INPUT_PULLUP abfragen kannst.",
     "auftragSelbst": "Schließe den Servo und den Taster an den Arduino an. Der Taster soll mit INPUT_PULLUP abgefragt werden.",
@@ -290,7 +306,7 @@ DATEN.aufgaben = [
     ]
   },
   {
-    "id": 3,
+    "id": 4,
     "titel": "DC-Motor mit Motortreiber",
     "auftrag": "Schließe den DC-Motor über den Motortreiber an den Arduino an. Den Strom liefert die 9-V-Batterie. Welche Pins du für die Steuerung nimmst, darfst du selbst entscheiden.",
     "bauteile": ["arduino", "treiber", "motor", "batterie"],
@@ -299,13 +315,13 @@ DATEN.aufgaben = [
     "vorverkabelt": []
   },
   {
-    "id": 4,
+    "id": 5,
     "titel": "DC-Motor und Taster",
-    "auftrag": "Die Schaltung aus Aufgabe 3 ist schon gesteckt (helle Kabel). Schließe zusätzlich den Taster an einem freien Pin an.",
+    "auftrag": "Die Schaltung aus Aufgabe 4 ist schon gesteckt (helle Kabel). Schließe zusätzlich den Taster an einem freien Pin an.",
     "auftragSelbst": "Schließe den DC-Motor mit Motortreiber und 9-V-Batterie sowie den Taster (INPUT_PULLUP) an den Arduino an.",
     "bauteile": ["arduino", "treiber", "motor", "batterie", "taster"],
     "bausteine": ["motor_l298n", "taster"],
-    "vorgaenger": 3,
+    "vorgaenger": 4,
     "dokumente": ["Arbeitsblatt DC-Motor Praxis", "Arbeitsblatt DC-Motor Theorie", "Aufschrieb Gleichstrommotor", "Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
     "vorverkabelt": [
       ["batterie.stecker", "arduino.BUCHSE"],
@@ -319,13 +335,13 @@ DATEN.aufgaben = [
     ]
   },
   {
-    "id": 5,
+    "id": 6,
     "titel": "DC-Motor, Taster und Servo",
-    "auftrag": "Die Schaltung aus Aufgabe 4 ist schon gesteckt (helle Kabel). Schließe zusätzlich den Servo an einem freien Pin an.",
+    "auftrag": "Die Schaltung aus Aufgabe 5 ist schon gesteckt (helle Kabel). Schließe zusätzlich den Servo an einem freien Pin an.",
     "auftragSelbst": "Schließe DC-Motor mit Motortreiber und 9-V-Batterie, den Taster (INPUT_PULLUP) und den Servo an den Arduino an.",
     "bauteile": ["arduino", "treiber", "motor", "batterie", "taster", "servo"],
     "bausteine": ["motor_l298n", "taster", "servo"],
-    "vorgaenger": 4,
+    "vorgaenger": 5,
     "dokumente": ["Arbeitsblatt Servomotor", "Aufschrieb Servomotor", "Arbeitsblatt DC-Motor Praxis", "Arbeitsblatt DC-Motor Theorie", "Aufschrieb Gleichstrommotor", "Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
     "vorverkabelt": [
       ["batterie.stecker", "arduino.BUCHSE"],
@@ -341,22 +357,6 @@ DATEN.aufgaben = [
     ],
     "sonderregeln": [
       { "anforderung": "motor_enable", "zu": ["arduino.D9", "arduino.D10"], "hinweis": "enable_9_10" }
-    ]
-  },
-  {
-    "id": 6,
-    "titel": "Vierbeiniger Taster und Servo",
-    "auftrag": "Der Servo aus Aufgabe 1 ist schon angeschlossen (helle Kabel). Der vierbeinige Taster steckt schon auf dem Breadboard. Schließe ihn so an, wie ihr es im Unterricht gelernt habt: mit dem 10-kΩ-Widerstand als Pulldown. Den Widerstand steckst du mit „Widerstand einsetzen“ direkt ins Breadboard.",
-    "auftragSelbst": "Schließe den Servo an. Der vierbeinige Taster steckt schon auf dem Breadboard: Schließe ihn mit dem 10-kΩ-Widerstand als Pulldown an. Den Widerstand steckst du mit „Widerstand einsetzen“ direkt ins Breadboard.",
-    "bauteile": ["arduino", "breadboard", "servo"],
-    "widerstand": true,
-    "bausteine": ["servo", "taster4"],
-    "vorgaenger": 1,
-    "dokumente": ["Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
-    "vorverkabelt": [
-      ["servo.rot", "arduino.3V3"],
-      ["servo.braun", "arduino.GND_1"],
-      ["servo.orange", "arduino.D9"]
     ]
   }
 ];
