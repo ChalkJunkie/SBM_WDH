@@ -11,7 +11,7 @@
 // Versionsnummer des Spiels. Steht auch hinter allen Dateinamen in den
 // HTML-Dateien (?v=...), damit der Browser nach einem Update keine alten
 // Dateien aus dem Zwischenspeicher mischt. Wird auf der Startseite angezeigt.
-var SPIEL_VERSION = "2026-11-06j";
+var SPIEL_VERSION = "2026-11-06k";
 
 // Name, unter dem alles im localStorage abgelegt wird.
 var SPEICHER_PRAEFIX = "seifenblasen_";

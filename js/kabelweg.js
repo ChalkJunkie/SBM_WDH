@@ -14,6 +14,7 @@ var KABELWEG = {
   RASTER: 12,        // Abstand der Bahnen in Brett-Einheiten
   ABSTAND: 12,       // so weit bleiben Kabel von Bauteilen weg
   STUMMEL: 14,       // so weit ragt der gerade Anfang über den Abstand hinaus
+  STECKER: 40,       // zusätzlich vor der Strombuchse (Platz für den Hohlstecker)
   FANG: 4,           // Pins, die so nah auf einer Linie liegen, teilen sich eine Bahn
   ZEIT: 300,         // höchstens so viele Millisekunden fürs Aufräumen nach jedem Kabel
   RAND: 140,         // so weit dürfen Kabel um die Bauteile herum laufen
@@ -105,10 +106,12 @@ function Kabelwege(bauteile) {
       var pos = bildZuBrett(n, p.x, p.y);
       var ri = pinAusgang(n, p), d = RICHTUNG[ri];
       var ende = { x: pos.x, y: pos.y };
-      if (d.y < 0) ende.y = h.y0 - K.STUMMEL;
-      if (d.y > 0) ende.y = h.y1 + K.STUMMEL;
-      if (d.x < 0) ende.x = h.x0 - K.STUMMEL;
-      if (d.x > 0) ende.x = h.x1 + K.STUMMEL;
+      // Vor der Strombuchse braucht der Hohlstecker Platz: längerer gerader Anfang
+      var stummel = K.STUMMEL + (p.art === "buchse" ? K.STECKER : 0);
+      if (d.y < 0) ende.y = h.y0 - stummel;
+      if (d.y > 0) ende.y = h.y1 + stummel;
+      if (d.x < 0) ende.x = h.x0 - stummel;
+      if (d.x > 0) ende.x = h.x1 + stummel;
       self.pins[n + "." + p.id] = { pos: pos, richtung: ri, ende: ende, kante: { x0: h.x0, y0: h.y0, x1: h.x1, y1: h.y1 } };
       pinX.push(ende.x); pinY.push(ende.y);
     });

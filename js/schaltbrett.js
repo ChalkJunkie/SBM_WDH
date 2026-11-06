@@ -547,34 +547,50 @@ Schaltbrett.prototype._zeichneWiderstand = function (k, marke) {
   if (marke) this._marke({ x: mx, y: my - 24 }, marke, "falsch");
 };
 
-// Batterie-Adapterkabel: rote und schwarze Ader nebeneinander, am anderen
-// Ende ein Hohlstecker, der in die Strombuchse des Arduino passt.
+// Batterie-Adapterkabel: rote und schwarze Ader, die genau an die beiden
+// Aderenden im Batteriebild anschließen. Am anderen Ende ein Hohlstecker in
+// der Größe der Strombuchse des Arduino.
+var BATTERIE_ADERN = 12;   // halber Abstand der Aderenden im Batteriebild (Pixel im Bild)
 Schaltbrett.prototype._zeichneBatteriekabel = function (k, marke) {
   var pk = this.routen[k.id].punkte.slice();
   if (k.a !== "batterie.stecker") pk.reverse();      // pk beginnt an der Batterie
   var ende = pk[pk.length - 1], vor = pk[pk.length - 2];
   var lang = Math.hypot(ende.x - vor.x, ende.y - vor.y) || 1;
   var u = { x: (ende.x - vor.x) / lang, y: (ende.y - vor.y) / lang };
-  var SPITZE = 18, GRIFF = 44;
-  // Das Kabel endet am Griff des Steckers
-  var griffAnfang = { x: ende.x - u.x * (SPITZE + GRIFF), y: ende.y - u.y * (SPITZE + GRIFF) };
-  var kabelPk = pk.slice(0, -1).concat([lang > SPITZE + GRIFF ? griffAnfang : vor]);
+  // Maße des Steckers (passend zur Buchse im Arduino-Bild, mitskaliert)
+  var ziel = k.a === "batterie.stecker" ? k.b : k.a;
+  var sk = (DATEN.schaltbrett[Pins.bauteil(ziel)] || {}).skala || 1;
+  var HUELSE = 24 * sk, KOERPER = 46 * sk, TUELLE = 26 * sk;
+  var laenge = HUELSE + KOERPER + TUELLE;
+  // Das Kabel endet hinten am Stecker
+  var hinten = { x: ende.x - u.x * laenge, y: ende.y - u.y * laenge };
+  var kabelPk = pk.slice(0, -1).concat([lang > laenge ? hinten : vor]);
   var mitte = Kabelwege.pfad(pk);
+  var abstand = BATTERIE_ADERN * (DATEN.schaltbrett.batterie.skala || 1);
   var g = svgElement("g", { "class": "kabel batteriekabel" + (k.gesperrt ? " gesperrt" : "") + (marke ? " falsch" : "") });
   var farbe = function (f) { return k.gesperrt ? pastell(f) : f; };
-  g.appendChild(svgElement("path", { d: Kabelwege.pfad(kabelPk).d, "class": "kabel-rand", style: "stroke-width:13px" }));
-  g.appendChild(svgElement("path", { d: Kabelwege.pfad(versetzt(kabelPk, 3)).d, "class": "kabel-farbe", stroke: farbe("#d32020"), style: "stroke-width:5.5px" }));
-  g.appendChild(svgElement("path", { d: Kabelwege.pfad(versetzt(kabelPk, -3)).d, "class": "kabel-farbe", stroke: farbe("#1e1e1e"), style: "stroke-width:5.5px" }));
+  [[abstand, "#d32020"], [-abstand, "#1e1e1e"]].forEach(function (ader) {
+    var d = Kabelwege.pfad(versetzt(kabelPk, ader[0])).d;
+    g.appendChild(svgElement("path", { d: d, "class": "kabel-rand", style: "stroke-width:8.5px" }));
+    g.appendChild(svgElement("path", { d: d, "class": "kabel-farbe", stroke: farbe(ader[1]), style: "stroke-width:5.5px" }));
+  });
   if (marke) g.appendChild(svgElement("path", { d: Kabelwege.pfad(kabelPk).d, "class": "kabel-falsch-muster" }));
-  // Hohlstecker: schwarzer Griff mit Rillen, silberne Spitze
+  // Hohlstecker (von hinten nach vorne): Knickschutz mit Rillen, Griff, Metallhülse
   var winkel = Math.atan2(u.y, u.x) * 180 / Math.PI;
   var st = svgElement("g", { transform: "translate(" + ende.x + " " + ende.y + ") rotate(" + winkel + ")" });
-  st.appendChild(svgElement("rect", { x: -SPITZE - GRIFF, y: -10, width: GRIFF, height: 20, rx: 5, fill: farbe("#1e1e1e"), stroke: "rgba(0,0,0,.6)", "stroke-width": 1.5 }));
+  var x0 = -laenge, schwarz = farbe("#1e1e1e");
+  var hT = 2 * abstand + 10;   // Knickschutz: etwas breiter als die beiden Adern
+  st.appendChild(svgElement("rect", { x: x0, y: -hT / 2, width: TUELLE + 4, height: hT, rx: 4, fill: schwarz, stroke: "rgba(0,0,0,.6)", "stroke-width": 1.5 }));
   for (var i = 0; i < 4; i++) {
-    st.appendChild(svgElement("rect", { x: -SPITZE - GRIFF + 5 + i * 6, y: -11.5, width: 3, height: 23, rx: 1, fill: farbe("#3a3a3a") }));
+    st.appendChild(svgElement("rect", { x: x0 + 3 + i * (TUELLE / 4), y: -hT / 2 - 2, width: TUELLE / 9, height: hT + 4, rx: 1.5, fill: farbe("#333") }));
   }
-  st.appendChild(svgElement("rect", { x: -SPITZE, y: -6.5, width: SPITZE, height: 13, rx: 2, fill: "#c9c9c9", stroke: "#7d7d7d", "stroke-width": 1.2 }));
-  st.appendChild(svgElement("rect", { x: -SPITZE + 2, y: -2, width: SPITZE - 4, height: 2, fill: "#f2f2f2" }));
+  var hK = 44 * sk;
+  st.appendChild(svgElement("rect", { x: x0 + TUELLE, y: -hK / 2, width: KOERPER, height: hK, rx: 8 * sk, fill: schwarz, stroke: "rgba(0,0,0,.6)", "stroke-width": 1.5 }));
+  st.appendChild(svgElement("rect", { x: x0 + TUELLE + 4, y: -hK / 2 + 4, width: KOERPER - 8, height: hK * 0.18, rx: 3, fill: "rgba(255,255,255,.12)" }));
+  var hH = 28 * sk;
+  st.appendChild(svgElement("rect", { x: -HUELSE, y: -hH / 2, width: HUELSE, height: hH, rx: 2, fill: "#cfcfcf", stroke: "#7d7d7d", "stroke-width": 1.5 }));
+  st.appendChild(svgElement("rect", { x: -HUELSE + 2, y: -hH / 2 + 4, width: HUELSE - 4, height: hH * 0.2, fill: "#f4f4f4" }));
+  st.appendChild(svgElement("rect", { x: -HUELSE + 2, y: hH / 2 - 7, width: HUELSE - 4, height: 3, fill: "#9a9a9a" }));
   g.appendChild(st);
   g.appendChild(svgElement("path", { d: mitte.d, "class": "kabel-treffer", "data-kabel": k.id }));
   this.ebeneKabel.appendChild(g);
