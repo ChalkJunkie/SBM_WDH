@@ -51,10 +51,24 @@
     if (n >= naechsteId) naechsteId = n + 1;
   });
 
-  // Vorgegebene (gesperrte) Kabel aus der vorherigen Aufgabe
+  // ---------- Vorgegebene Kabel aus der vorherigen Aufgabe ----------
+  // Nur wenn die vorherige Aufgabe ("vorgaenger") gelöst ist, und zwar mit
+  // der EIGENEN Lösung der Schüler:innen. Sonst startet das Brett leer,
+  // damit niemand die Lösung geschenkt bekommt.
+  var vorgabe = [];          // Liste von [a, b]
+  var vorgabeFehlt = false;  // vorherige Aufgabe noch nicht gelöst
+  if (aufgabe.vorgaenger) {
+    if (Fortschritt.istGeloest("verkabeln", aufgabe.vorgaenger)) {
+      vorgabe = Speicher.lesen("loesung_" + aufgabe.vorgaenger, null) || aufgabe.vorverkabelt || [];
+    } else {
+      vorgabeFehlt = true;
+      selbst = true;
+    }
+  }
+
   function vorgegebeneKabel() {
     if (selbst) return [];
-    return (aufgabe.vorverkabelt || []).map(function (paar, i) {
+    return vorgabe.map(function (paar, i) {
       return { id: "v" + i, a: paar[0], b: paar[1], farbe: autoFarbeFest(paar[0], paar[1]), gesperrt: true };
     });
   }
@@ -92,8 +106,18 @@
     wahl.appendChild(link);
   });
 
+  // Vorherige Aufgabe noch nicht gelöst: Hinweis statt Vorgabe
+  if (vorgabeFehlt) {
+    var tipp = document.createElement("p");
+    tipp.className = "tipp-vorgaenger";
+    tipp.innerHTML = 'ℹ Tipp: Löse zuerst <a href="verkabeln.html?aufgabe=' + aufgabe.vorgaenger + '">Aufgabe ' +
+      aufgabe.vorgaenger + "</a>. Dann ist deine Schaltung von dort hier schon gesteckt und du musst nur noch ergänzen.";
+    var auftragEl = document.getElementById("auftrag");
+    auftragEl.parentNode.insertBefore(tipp, auftragEl.nextSibling);
+  }
+
   // "Alles selbst verkabeln" nur zeigen, wenn es Vorgaben gibt
-  if ((aufgabe.vorverkabelt || []).length) {
+  if (vorgabe.length) {
     var zeile = document.getElementById("selbstVerkabelnZeile");
     var box = document.getElementById("selbstVerkabeln");
     zeile.hidden = false;
@@ -375,6 +399,8 @@
   function zeigeErgebnis(ergebnis) {
     if (ergebnis.geloest) {
       Fortschritt.setzeGeloest("verkabeln", aufgabe.id);
+      // Eigene Lösung merken: sie wird in der nächsten Aufgabe vorgesteckt
+      Speicher.schreiben("loesung_" + aufgabe.id, alleKabel().map(function (k) { return [k.a, k.b]; }));
       rueckmeldung.innerHTML = '<div class="meldung meldung-richtig"><span class="meldung-symbol">✔</span>' +
         "<div><strong>Alles richtig!</strong> Du hast einen Stern bekommen.</div></div>";
       var stern = wahl.querySelector(".aktiv");

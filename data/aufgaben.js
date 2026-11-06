@@ -248,8 +248,12 @@ DATEN.kabelHinweise = [
 //   bauteile      welche Bauteile auf dem Brett liegen
 //   bausteine     welche Teil-Schaltungen geprüft werden
 //   dokumente     das erste wird bei allgemeinen Hinweisen angezeigt
-//   vorverkabelt  helle (pastellfarbene), gesperrte Kabel aus der vorherigen Aufgabe
-//                 (mit "Alles selbst verkabeln" startet das Brett leer)
+//   vorgaenger    Nummer der vorherigen Aufgabe. Ist sie gelöst, wird die
+//                 EIGENE Lösung von dort hell (pastell) und gesperrt vorgesteckt.
+//                 Ist sie nicht gelöst, startet das Brett leer.
+//                 (mit "Alles selbst verkabeln" startet es ebenfalls leer)
+//   vorverkabelt  nur Ersatz, falls die vorherige Aufgabe gelöst ist, ihre
+//                 Lösung aber nicht gespeichert wurde (z. B. ältere Version)
 //   auftragSelbst Auftragstext, wenn "Alles selbst verkabeln" gewählt ist
 //   sonderregeln  Hinweis (ℹ) statt Fehler für bestimmte Pins; die Aufgabe
 //                 ist erst gelöst, wenn der Pin geändert wurde
@@ -271,6 +275,7 @@ DATEN.aufgaben = [
     "auftragSelbst": "Schließe den Servo und den Taster an den Arduino an. Der Taster soll mit INPUT_PULLUP abgefragt werden.",
     "bauteile": ["arduino", "servo", "taster"],
     "bausteine": ["servo", "taster"],
+    "vorgaenger": 1,
     "dokumente": ["Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
     "vorverkabelt": [
       ["servo.rot", "arduino.3V3"],
@@ -294,6 +299,7 @@ DATEN.aufgaben = [
     "auftragSelbst": "Schließe den DC-Motor mit Motortreiber und 9-V-Batterie sowie den Taster (INPUT_PULLUP) an den Arduino an.",
     "bauteile": ["arduino", "treiber", "motor", "batterie", "taster"],
     "bausteine": ["motor_l298n", "taster"],
+    "vorgaenger": 3,
     "dokumente": ["Arbeitsblatt DC-Motor Praxis", "Arbeitsblatt DC-Motor Theorie", "Aufschrieb Gleichstrommotor", "Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
     "vorverkabelt": [
       ["batterie.stecker", "arduino.BUCHSE"],
@@ -313,6 +319,7 @@ DATEN.aufgaben = [
     "auftragSelbst": "Schließe DC-Motor mit Motortreiber und 9-V-Batterie, den Taster (INPUT_PULLUP) und den Servo an den Arduino an.",
     "bauteile": ["arduino", "treiber", "motor", "batterie", "taster", "servo"],
     "bausteine": ["motor_l298n", "taster", "servo"],
+    "vorgaenger": 4,
     "dokumente": ["Arbeitsblatt Servomotor", "Aufschrieb Servomotor", "Arbeitsblatt DC-Motor Praxis", "Arbeitsblatt DC-Motor Theorie", "Aufschrieb Gleichstrommotor", "Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],
     "vorverkabelt": [
       ["batterie.stecker", "arduino.BUCHSE"],

@@ -228,3 +228,5 @@ body.modus-anordnen .nur-anordnen { display: flex !important; }
 body.modus-anordnen .nur-verkabeln { display: none !important; }
 .anordnen-leiste { flex-direction: column; gap: .7rem; }
 .knopf:disabled { opacity: .45; cursor: default; }
+.tipp-vorgaenger { margin: 0; padding: .6rem .8rem; border-radius: 10px; background: var(--info-hell); border: 2px solid var(--info); }
+.tipp-vorgaenger a { color: var(--info); font-weight: 700; }
