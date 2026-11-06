@@ -85,6 +85,11 @@
         html += '<button type="button" class="slot' + (k !== undefined ? " belegt" : "") + '" data-zeile="' + i + '">' +
           (k !== undefined ? symbol + '<span class="slot-text">// ' + esc(karten[k]) + "</span>"
                            : '<span class="slot-leer">＋ Kommentar zuordnen</span>') + "</button>";
+        // Falsch zugeordnet: Hinweis aufs Arbeitsmaterial direkt an der Zeile
+        if (markierung[i] === "falsch") {
+          html += '<div class="erklaerung falsch"><strong>✖ Passt nicht.</strong>' +
+            '<span class="meldung-dokument">📖 Schau nach: ' + esc(dokumentText(z.dokument || prog.dokument)) + "</span></div>";
+        }
       }
       li.innerHTML = html;
       codeliste.appendChild(li);

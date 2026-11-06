@@ -49,8 +49,8 @@ DATEN.programme = [
     "auftrag": "Wird der zweibeinige Taster gedrückt, leuchtet die LED fünf Sekunden lang.",
     "dokument": "Arbeitsblatt Taster Praxis",
     "zeilen": [
-      { "code": "int LED = 6;", "kommentar": "LED steht ab jetzt für Pin 6." },
-      { "code": "int taster = 2;", "kommentar": "taster steht ab jetzt für Pin 2." },
+      { "code": "int LED = 6;", "kommentar": "Die Variable LED wird angelegt und bekommt den Wert 6 (die Pinnummer der LED)." },
+      { "code": "int taster = 2;", "kommentar": "Die Variable taster wird angelegt und bekommt den Wert 2 (die Pinnummer des Tasters)." },
       { "code": "void setup()", "kommentar": "Setup: läuft nur einmal beim Start.", "dokument": "Arbeitsblatt Ampel und PAP" },
       { "code": "{" },
       { "code": "  pinMode(LED, OUTPUT);", "kommentar": "Der LED-Pin wird ein Ausgang.", "dokument": "Arbeitsblatt Taster Theorie" },
@@ -79,9 +79,9 @@ DATEN.programme = [
     "auftrag": "Der Motor dreht sich zwei Sekunden in die eine Richtung, zwei Sekunden in die andere Richtung und steht dann zwei Sekunden still.",
     "dokument": "Arbeitsblatt DC-Motor Praxis",
     "zeilen": [
-      { "code": "int ENB = 3;", "kommentar": "ENB steht ab jetzt für Pin 3 (mit ~, also PWM).", "dokument": "Aufschrieb Gleichstrommotor" },
-      { "code": "int in4 = 7;", "kommentar": "in4 steht ab jetzt für Pin 7." },
-      { "code": "int in3 = 8;", "kommentar": "in3 steht ab jetzt für Pin 8." },
+      { "code": "int ENB = 3;", "kommentar": "Die Variable ENB wird angelegt und bekommt den Wert 3 (die Pinnummer von ENB, ein Pin mit ~).", "dokument": "Aufschrieb Gleichstrommotor" },
+      { "code": "int in4 = 7;", "kommentar": "Die Variable in4 wird angelegt und bekommt den Wert 7 (die Pinnummer von IN4)." },
+      { "code": "int in3 = 8;", "kommentar": "Die Variable in3 wird angelegt und bekommt den Wert 8 (die Pinnummer von IN3)." },
       { "code": "void setup()", "kommentar": "Setup: läuft nur einmal beim Start.", "dokument": "Arbeitsblatt Ampel und PAP" },
       { "code": "{" },
       { "code": "  pinMode(ENB, OUTPUT);", "kommentar": "Pin 3 (ENB) wird ein Ausgang." },
@@ -113,7 +113,7 @@ DATEN.programme = [
     "zeilen": [
       { "code": "#include <Servo.h>", "kommentar": "Bindet die Servo-Bibliothek ein. Sie erzeugt die Signale für den Servo." },
       { "code": "Servo S1;", "kommentar": "Legt einen Servo mit dem Namen S1 an." },
-      { "code": "int taster = 2;", "kommentar": "taster steht ab jetzt für Pin 2.", "dokument": "Arbeitsblatt Taster Praxis" },
+      { "code": "int taster = 2;", "kommentar": "Die Variable taster wird angelegt und bekommt den Wert 2 (die Pinnummer des Tasters).", "dokument": "Arbeitsblatt Taster Praxis" },
       { "code": "void setup()", "kommentar": "Setup: läuft nur einmal beim Start.", "dokument": "Arbeitsblatt Ampel und PAP" },
       { "code": "{" },
       { "code": "  S1.attach(9);", "kommentar": "Der Servo S1 hängt an Pin 9." },

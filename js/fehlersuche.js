@@ -14,7 +14,7 @@
   var aufgaben = DATEN.fehlersuche;
   var gewuenscht = parseInt(adressParameter("aufgabe"), 10);
   var aufgabe = aufgaben.filter(function (a) { return a.id === gewuenscht; })[0] || aufgaben[0];
-  var speicherName = "fehlersuche2_" + aufgabe.id;   // "2": Aufgaben wurden neu nummeriert
+  var speicherName = "fehlersuche3_" + aufgabe.id;   // "3": Aufgaben wurden neu nummeriert
 
   // Fehler nach Zeilenindex (0-basiert)
   var fehlerBei = {};
@@ -40,8 +40,8 @@
     var link = document.createElement("a");
     link.href = "fehlersuche.html?aufgabe=" + a.id;
     link.className = "knopf rund" + (a.id === aufgabe.id ? " aktiv" : "");
-    link.setAttribute("aria-label", "Fehlersuche " + a.id + (Fortschritt.istGeloest("fehlersuche2", a.id) ? " (gelöst)" : ""));
-    link.innerHTML = a.id + (Fortschritt.istGeloest("fehlersuche2", a.id) ? '<span class="stern-klein">★</span>' : "");
+    link.setAttribute("aria-label", "Fehlersuche " + a.id + (Fortschritt.istGeloest("fehlersuche3", a.id) ? " (gelöst)" : ""));
+    link.innerHTML = a.id + (Fortschritt.istGeloest("fehlersuche3", a.id) ? '<span class="stern-klein">★</span>' : "");
     wahl.appendChild(link);
   });
 
@@ -96,7 +96,7 @@
 
     if (!fehlend && !daneben) {
       zusammenfassung.innerHTML = '<span class="zf zf-richtig">✔ Alle Fehler gefunden!</span>';
-      Fortschritt.setzeGeloest("fehlersuche2", aufgabe.id);
+      Fortschritt.setzeGeloest("fehlersuche3", aufgabe.id);
       var stern = wahl.querySelector(".aktiv");
       if (stern && !stern.querySelector(".stern-klein")) stern.innerHTML += '<span class="stern-klein">★</span>';
       var naechste = aufgaben[aufgaben.indexOf(aufgabe) + 1];
@@ -110,7 +110,15 @@
     }
     var teile = ['<span class="zf">' + gefunden + " von " + aufgabe.fehler.length + " Fehlern gefunden.</span>"];
     if (daneben) teile.push('<span class="zf zf-falsch">✖ ' + daneben + (daneben === 1 ? " Zeile ist" : " Zeilen sind") + " in Ordnung.</span>");
-    if (fehlend) teile.push('<span class="zf zf-fehlt">＋ ' + fehlend + (fehlend === 1 ? " Fehler fehlt" : " Fehler fehlen") + " noch. Vergleiche mit dem Ablaufplan und der Verkabelung.</span>");
+    if (fehlend) {
+      // Dokumente zu den noch nicht gefundenen Fehlern (ohne die Zeile zu verraten)
+      var doks = [];
+      aufgabe.fehler.forEach(function (f) {
+        if (!markiert[f.zeile - 1] && f.dokument && doks.indexOf(f.dokument) < 0) doks.push(f.dokument);
+      });
+      teile.push('<span class="zf zf-fehlt">＋ ' + fehlend + (fehlend === 1 ? " Fehler fehlt" : " Fehler fehlen") + " noch. Vergleiche mit dem Ablaufplan und der Verkabelung.</span>");
+      if (doks.length) teile.push('<span class="zf zf-tipp">📖 Tipp – schau nach: ' + doks.map(function (d) { return esc(dokumentText(d)); }).join(", ") + "</span>");
+    }
     zusammenfassung.innerHTML = teile.join(" ");
   });
 

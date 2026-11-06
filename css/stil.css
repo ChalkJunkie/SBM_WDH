@@ -359,3 +359,7 @@ body.zieht-karte { cursor: grabbing; }
 .sternregen span { display: inline-block; animation: sternpop .6s ease-out both; }
 @keyframes sternpop { from { transform: scale(0) rotate(-90deg); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sternregen span { animation: none; } }
+/* Teil A: Hinweis zum Arbeitsmaterial unter einem falschen Kommentar */
+.codeliste.mit-kommentaren .erklaerung { grid-column: 3; margin-top: 0; }
+@media (max-width: 760px) { .codeliste.mit-kommentaren .erklaerung { grid-column: 2; } }
+.zf-tipp { color: var(--info); flex-basis: 100%; }
