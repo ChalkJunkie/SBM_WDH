@@ -28,7 +28,7 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 1,
-    "titel": "Taster mit LED (4 Fehler)",
+    "titel": "Taster mit LED",
     "soll": "Wird der zweibeinige Taster gedrückt, soll die LED fünf Sekunden lang leuchten.",
     "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND","LED (mit Vorwiderstand) an Pin 6"],
     "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"LED an"},{"art":"schritt","text":"5 Sekunden warten"},{"art":"schritt","text":"LED aus"}],"neinZurLetzten":true}]}],
@@ -64,7 +64,7 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 2,
-    "titel": "Servo (3 Fehler)",
+    "titel": "Servo",
     "soll": "Der Servo soll abwechselnd auf 0 Grad und auf 90 Grad fahren und dort jeweils eine Sekunde bleiben.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9","Servo: Plus (rot) an 3V3, GND (braun) an GND"],
     "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Servo-Bibliothek einbinden"},{"art":"schritt","text":"Servo an Pin 9 festlegen"},{"art":"schleife","schritte":[{"art":"schritt","text":"Servo auf 0 Grad"},{"art":"schritt","text":"1 Sekunde warten"},{"art":"schritt","text":"Servo auf 90 Grad"},{"art":"schritt","text":"1 Sekunde warten"}]}],
@@ -90,7 +90,7 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 3,
-    "titel": "Servo und Taster (2 Fehler)",
+    "titel": "Servo und Taster",
     "soll": "Wird der Taster gedrückt, soll der Servo auf 90 Grad fahren, dort 5 Sekunden bleiben und dann zurück auf 0 Grad fahren.",
     "verkabelung": ["Servo: Signal (orange) an Pin 9","Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND"],
     "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Servo-Bibliothek einbinden"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"Servo auf 90 Grad"},{"art":"schritt","text":"5 Sekunden warten"},{"art":"schritt","text":"Servo auf 0 Grad"}]}]}],
@@ -121,7 +121,7 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 4,
-    "titel": "Vierbeiniger Taster und Servo (2 Fehler)",
+    "titel": "Vierbeiniger Taster und Servo",
     "soll": "Wird der vierbeinige Taster gedrückt, soll der Servo auf 90 Grad fahren, dort 5 Sekunden bleiben und dann zurück auf 0 Grad fahren.",
     "verkabelung": ["Vierbeiniger Taster auf dem Breadboard: ein Bein an 5V, das diagonale Bein an Pin 7","10-kΩ-Widerstand zwischen Pin 7 und GND (Pulldown)","Servo: Signal (orange) an Pin 9"],
     "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Servo-Bibliothek einbinden"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"Servo auf 90 Grad"},{"art":"schritt","text":"5 Sekunden warten"},{"art":"schritt","text":"Servo auf 0 Grad"}]}]}],
@@ -153,7 +153,7 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 5,
-    "titel": "DC-Motor (2 Fehler)",
+    "titel": "DC-Motor",
     "soll": "Der Motor soll sich zwei Sekunden in die eine Richtung drehen, zwei Sekunden in die andere Richtung und dann zwei Sekunden stillstehen.",
     "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8","DC-Motor an Klemme Motor B","Batterie in der Strombuchse, VIN an +12V, GND an GND"],
     "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"schritt","text":"Motor dreht in eine Richtung (Geschwindigkeit 200)"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor dreht andersherum"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor aus"},{"art":"schritt","text":"2 Sekunden warten"}]}],
@@ -190,7 +190,7 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 6,
-    "titel": "DC-Motor und Taster (3 Fehler)",
+    "titel": "DC-Motor und Taster",
     "soll": "Wird der Taster gedrückt, soll sich der Motor zwei Sekunden lang drehen. Sonst ist der Motor aus.",
     "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8","Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND","DC-Motor an Klemme Motor B, Batterie in der Strombuchse"],
     "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"Motor an (Geschwindigkeit 200)"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor aus"}],"neinZurLetzten":true}]}],

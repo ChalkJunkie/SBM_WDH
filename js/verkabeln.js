@@ -43,7 +43,10 @@
   // ---------- Zustand ----------
   var gespeichert = Speicher.lesen(speicherName, null) || {};
   var selbst = !!gespeichert.selbst;          // "Alles selbst verkabeln"
-  var kabel = gespeichert.kabel || [];        // eigene Kabel
+  // Eigene Kabel. Kabel an Anschlüssen, die es nicht (mehr) gibt, fallen weg
+  // (z. B. aus einer älteren Version des Spiels).
+  function gibtEs(k) { return !!Pins.daten(k.a) && !!Pins.daten(k.b); }
+  var kabel = (gespeichert.kabel || []).filter(gibtEs);
   var verlauf = [];                           // für "Rückgängig"
   var naechsteId = 1;
   kabel.forEach(function (k) {
@@ -59,7 +62,8 @@
   var vorgabeFehlt = false;  // vorherige Aufgabe noch nicht gelöst
   if (aufgabe.vorgaenger) {
     if (Fortschritt.istGeloest("verkabeln", aufgabe.vorgaenger)) {
-      vorgabe = Speicher.lesen("loesung_" + aufgabe.vorgaenger, null) || aufgabe.vorverkabelt || [];
+      vorgabe = (Speicher.lesen("loesung_" + aufgabe.vorgaenger, null) || aufgabe.vorverkabelt || [])
+        .filter(function (paar) { return gibtEs({ a: paar[0], b: paar[1] }); });
     } else {
       vorgabeFehlt = true;
       selbst = true;
@@ -69,7 +73,8 @@
   function vorgegebeneKabel() {
     if (selbst) return [];
     return vorgabe.map(function (paar, i) {
-      return { id: "v" + i, a: paar[0], b: paar[1], farbe: autoFarbeFest(paar[0], paar[1]), gesperrt: true };
+      return { id: "v" + i, a: paar[0], b: paar[1], farbe: autoFarbeFest(paar[0], paar[1]), gesperrt: true,
+               widerstand: paar[2] === "widerstand" || undefined };
     });
   }
   function autoFarbeFest(a, b) { var z = wechselZaehler; var f = autoFarbe(a, b); wechselZaehler = z; return f; }
@@ -154,6 +159,63 @@
     farbknopf(f.wert, f.name, '<span class="farbe-punkt" style="background:' + f.wert + '"></span>');
   });
 
+  // ---------- Widerstand direkt ins Breadboard stecken ----------
+  var widerstandModus = false;
+  var widerstandKnopf = document.getElementById("widerstandEinsetzen");
+  function widerstandDa() { return alleKabel().filter(function (k) { return k.widerstand; })[0]; }
+  function setzeWiderstandModus(an) {
+    widerstandModus = an;
+    widerstandKnopf.classList.toggle("aktiv-modus", an);
+    widerstandKnopf.setAttribute("aria-pressed", an ? "true" : "false");
+  }
+  if (aufgabe.widerstand) {
+    widerstandKnopf.hidden = false;
+    widerstandKnopf.addEventListener("click", function () {
+      waehleAb();
+      if (widerstandModus) { setzeWiderstandModus(false); zeigeAnzeige("Tippe auf einen Anschluss."); return; }
+      if (widerstandDa()) {
+        zeigeAnzeige("Der Widerstand steckt schon. Tippe ihn an, wenn du ihn herausnehmen willst.", true);
+        return;
+      }
+      setzeWiderstandModus(true);
+      zeigeAnzeige("<strong>Widerstand einsetzen</strong><small>Tippe auf das Loch für das erste Bein.</small>", true);
+    });
+  }
+  // Steckt in diesem Loch schon etwas?
+  function lochBelegt(s) {
+    return alleKabel().filter(function (k) { return k.a === s || k.b === s; })[0];
+  }
+  var WIDERSTAND_REICHWEITE = 4.6 * 28.8;   // höchstens 4 Löcher Abstand (Lochabstand im Bild: 28,8)
+
+  function waehleWiderstandLoch(s) {
+    var name = esc(Pins.langerName(s));
+    if (Pins.bauteil(s) !== "breadboard") {
+      zeigeAnzeige("Die Beine des Widerstands kommen ins Breadboard. Tippe auf ein Loch.", true);
+      return;
+    }
+    if (lochBelegt(s)) { zeigeAnzeige("In <strong>" + name + "</strong> steckt schon etwas.", true); return; }
+    if (!auswahl) {
+      auswahl = s;
+      brett.setzeAuswahl(s);
+      zeigeAnzeige("<strong>" + name + "</strong><small>Tippe jetzt auf das Loch für das zweite Bein.</small>", true);
+      return;
+    }
+    if (auswahl === s) { waehleAb(); zeigeAnzeige("<small>Tippe auf das Loch für das erste Bein.</small>", true); return; }
+    var pa = Pins.daten(auswahl), pb = Pins.daten(s);
+    if (Math.hypot(pa.x - pb.x, pa.y - pb.y) > WIDERSTAND_REICHWEITE) {
+      zeigeAnzeige("So weit reichen die Beine des Widerstands nicht. Wähle ein Loch, das näher am ersten liegt.", true);
+      return;
+    }
+    var a = auswahl;
+    waehleAb();
+    merkeFuerRueckgaengig();
+    kabel.push({ id: "w" + (naechsteId++), a: a, b: s, farbe: "#e3c28f", widerstand: true });
+    setzeWiderstandModus(false);
+    speichern();
+    geaendert();
+    zeigeAnzeige("Widerstand eingesetzt: <strong>" + esc(Pins.langerName(a)) + "</strong> ↔ <strong>" + name + "</strong>");
+  }
+
   // ---------- Schaltbrett ----------
   var anzeige = document.getElementById("pinAnzeige");
   var auswahl = null;
@@ -185,6 +247,7 @@
   // ---------- Modus "Bauteile anordnen" ----------
   function anordnenUmschalten(an) {
     waehleAb();
+    setzeWiderstandModus(false);
     document.body.classList.toggle("modus-anordnen", an);
     brett.setzeAnordnen(an);
     document.getElementById("drehen").disabled = true;
@@ -261,6 +324,12 @@
       zeigeAnzeige("<strong>" + name + "</strong> wird nicht verwendet.", true);
       return;
     }
+    if (widerstandModus) { waehleWiderstandLoch(s); return; }
+    var belegt = lochBelegt(s);
+    if (belegt && belegt.widerstand) {
+      zeigeAnzeige("In <strong>" + name + "</strong> steckt schon ein Bein des Widerstands. Nimm ein anderes Loch in derselben Reihe.", true);
+      return;
+    }
     if (!auswahl) {
       auswahl = s;
       brett.setzeAuswahl(s);
@@ -297,7 +366,7 @@
       var k = alle.filter(function (x) { return x.id === t.id; })[0];
       return {
         text: '<span class="farbe-punkt" style="background:' + (k.gesperrt ? "#ccc" : k.farbe) + '"></span>' +
-          '<span class="kabel-wahl">' + esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b)) + "</span>",
+          '<span class="kabel-wahl">' + (k.widerstand ? "Widerstand: " : "") + esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b)) + "</span>",
         klasse: "lupe-knopf kabel-knopf",
         aktion: function () { setTimeout(function () { kabelGewaehlt(t.id); }, 0); }
       };
@@ -316,14 +385,14 @@
       return;
     }
     zeigeDialog({
-      titel: "Kabel löschen?",
+      titel: k.widerstand ? "Widerstand herausnehmen?" : "Kabel löschen?",
       html: "<p>" + esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b)) + "</p>",
       knoepfe: [
-        { text: "🗑 Löschen", haupt: true, aktion: function () {
+        { text: k.widerstand ? "🗑 Herausnehmen" : "🗑 Löschen", haupt: true, aktion: function () {
           merkeFuerRueckgaengig();
           kabel = kabel.filter(function (x) { return x.id !== id; });
           speichern(); geaendert();
-          zeigeAnzeige("Kabel gelöscht.");
+          zeigeAnzeige(k.widerstand ? "Widerstand herausgenommen." : "Kabel gelöscht.");
         } },
         { text: "Abbrechen" }
       ]
@@ -400,7 +469,9 @@
     if (ergebnis.geloest) {
       Fortschritt.setzeGeloest("verkabeln", aufgabe.id);
       // Eigene Lösung merken: sie wird in der nächsten Aufgabe vorgesteckt
-      Speicher.schreiben("loesung_" + aufgabe.id, alleKabel().map(function (k) { return [k.a, k.b]; }));
+      Speicher.schreiben("loesung_" + aufgabe.id, alleKabel().map(function (k) {
+        return k.widerstand ? [k.a, k.b, "widerstand"] : [k.a, k.b];
+      }));
       rueckmeldung.innerHTML = '<div class="meldung meldung-richtig"><span class="meldung-symbol">✔</span>' +
         "<div><strong>Alles richtig!</strong> Du hast einen Stern bekommen.</div></div>";
       var stern = wahl.querySelector(".aktiv");

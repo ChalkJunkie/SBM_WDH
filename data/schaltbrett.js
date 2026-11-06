@@ -17,6 +17,5 @@ DATEN.schaltbrett = {
   "batterie": { "x": 160,  "y": 820, "skala": 0.5,  "drehung": 0,  "spiegeln": false },
   "servo":    { "x": 20,   "y": 400, "skala": 0.75, "drehung": 0,  "spiegeln": true  },
   "taster":   { "x": 1300, "y": 480, "skala": 0.7,  "drehung": 0,  "spiegeln": false },
-  "breadboard": { "x": 660, "y": 60, "skala": 1,  "drehung": 0,  "spiegeln": false },
-  "widerstand": { "x": 1270, "y": 250, "skala": 1.7, "drehung": 0, "spiegeln": false }
+  "breadboard": { "x": 660, "y": 60, "skala": 1,  "drehung": 0,  "spiegeln": false }
 };

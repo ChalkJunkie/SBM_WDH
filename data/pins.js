@@ -337,15 +337,5 @@ DATEN.pins = {
       {"id": "J16", "name": "J16", "x": 461.3, "y": 360.2, "art": "loch", "ausgang": "unten"},
       {"id": "J17", "name": "J17", "x": 490.1, "y": 360.2, "art": "loch", "ausgang": "unten"}
     ]
-  },
-  "widerstand": {
-    "name": "10-kΩ-Widerstand",
-    "bild": "assets/10kOhm-Widerstand.png",
-    "breite": 103,
-    "hoehe": 23,
-    "pins": [
-      {"id": "links", "name": "linkes Bein", "x": 2, "y": 11.5, "farbe": "#9a9a9a", "ausgang": "links"},
-      {"id": "rechts", "name": "rechtes Bein", "x": 101, "y": 11.5, "farbe": "#9a9a9a", "ausgang": "rechts"}
-    ]
   }
 };

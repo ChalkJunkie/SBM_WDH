@@ -119,6 +119,10 @@ var Pruefung = (function () {
 
   // Prüft eine Variante. Gibt die Meldungen zurück.
   function pruefeVariante(aufgabe, variante, kabel) {
+    // Der Widerstand steckt direkt im Breadboard. Er ist kein Kabel und
+    // leitet nicht wie eines: Die Sonderprüfung bekommt ihn extra.
+    var widerstaende = kabel.filter(function (k) { return k.widerstand; });
+    kabel = kabel.filter(function (k) { return !k.widerstand; });
     var anforderungen = variante.anforderungen;
     var meldungen = [];
     var benutzt = {};        // Kabel-ID -> true, wenn einer Anforderung zugeordnet
@@ -178,7 +182,7 @@ var Pruefung = (function () {
 
     // 1b. Bausteine mit eigener Prüfung
     (variante.pruefer || []).forEach(function (name) {
-      SONDERPRUEFUNG[name](kabel, melde, benutzt);
+      SONDERPRUEFUNG[name](kabel, melde, benutzt, widerstaende);
     });
 
     // 2. Mehrfach belegte Anschlüsse
@@ -247,7 +251,9 @@ var Pruefung = (function () {
 
   // Netze: alle Anschlüsse, die über Kabel elektrisch verbunden sind.
   // Alle GND-Pins des Arduino gehören von vornherein zusammen.
-  function bildeNetze(kabel) {
+  // ohneTasterBeine: die inneren Verbindungen des vierbeinigen Tasters
+  // (Bein a–c, b–d) weglassen, um zu sehen, an welchem Bein etwas hängt.
+  function bildeNetze(kabel, ohneTasterBeine) {
     var eltern = {};
     function finde(x) {
       if (eltern[x] === undefined) eltern[x] = x;
@@ -261,6 +267,9 @@ var Pruefung = (function () {
     // Innen verbundene Löcher (Breadboard-Spalten, Taster-Beine a-c und b-d)
     Object.keys(DATEN.pins).forEach(function (b) {
       (DATEN.pins[b].verbunden || []).forEach(function (gruppe) {
+        if (ohneTasterBeine && gruppe.length === 2 && gruppe.every(function (id) {
+          var p = Pins.daten(b + "." + id); return p && p.belegbar === false;
+        })) return;
         for (var i = 1; i < gruppe.length; i++) vereine(b + "." + gruppe[0], b + "." + gruppe[i]);
       });
     });
@@ -316,11 +325,11 @@ var Pruefung = (function () {
     // Vierbeiniger Taster auf dem Breadboard mit externem 10-kΩ-Pulldown.
     // Richtig ist: Eine Seite des Tasters (Beine a+c bzw. b+d) bekommt 5V,
     // die andere Seite geht an einen Digitalpin UND über den Widerstand an GND.
-    taster4: function (kabel, melde, benutzt) {
-      var BB = "breadboard", W = "widerstand";
-      // Alle Kabel am Breadboard oder am Widerstand prüft diese Funktion
+    taster4: function (kabel, melde, benutzt, widerstaende) {
+      var BB = "breadboard";
+      // Alle Kabel am Breadboard prüft diese Funktion
       var bbKabel = kabel.filter(function (k) {
-        return [k.a, k.b].some(function (s) { var b = Pins.bauteil(s); return b === BB || b === W; });
+        return Pins.bauteil(k.a) === BB || Pins.bauteil(k.b) === BB;
       });
       bbKabel.forEach(function (k) { benutzt[k.id] = true; });
       function ids(liste) { return liste.map(function (k) { return k.id; }); }
@@ -345,14 +354,6 @@ var Pruefung = (function () {
       var seiten = [L, R];
 
       if (!bbKabel.length) { melde("fehlt", "taster4_fehlt", {}, [], []); return; }
-
-      // Widerstandsbeine müssen ins Breadboard
-      ["links", "rechts"].forEach(function (bein) {
-        kabel.forEach(function (k) {
-          var anderes = k.a === W + "." + bein ? k.b : k.b === W + "." + bein ? k.a : null;
-          if (anderes && Pins.bauteil(anderes) !== BB) melde("fehler", "widerstand_direkt", { ziel: Pins.langerName(anderes) }, [k.id], []);
-        });
-      });
 
       // Beide Seiten des Tasters dauerhaft verbunden?
       if (L === R) {
@@ -393,6 +394,25 @@ var Pruefung = (function () {
         var p = Pins.daten(pins[0]);
         if (p.id === "D0" || p.id === "D1") melde("fehler", "pin_rx_tx", { ziel: Pins.langerName(pins[0]) }, ids(kabelIn(pinSeite)), []);
         else if (p.art === "analog") melde("fehler", "pin_analog", { ziel: Pins.langerName(pins[0]) }, ids(kabelIn(pinSeite)), []);
+
+        // Streng diagonal: 5V und Pin an gegenüberliegenden Ecken (a/d oder b/c).
+        // a und b sind die oberen Beine (E8, E10), c und d die unteren (F8, F10).
+        var einzeln = bildeNetze(kabel, true), einzelnVon = {};
+        Object.keys(einzeln).forEach(function (w) { einzeln[w].pins.forEach(function (s) { einzelnVon[s] = w; }); });
+        var beine = function (seite) { return seite === L ? ["E8", "F8"] : ["E10", "F10"]; };
+        var amBein = function (bein, test) {
+          var w = einzelnVon[BB + "." + bein];
+          return !!w && einzeln[w].pins.some(function (s) {
+            if (Pins.bauteil(s) !== "arduino") return false; var d = Pins.daten(s); return d && test(d);
+          });
+        };
+        var plusBeine = beine(plusSeite).filter(function (b) { return amBein(b, function (d) { return d.id === "5V"; }); });
+        var pinBeine = beine(pinSeite).filter(function (b) { return amBein(b, function (d) { return d.art === "digital" || d.art === "analog"; }); });
+        var diagonal = plusBeine.some(function (a) { return pinBeine.some(function (b) { return a.charAt(0) !== b.charAt(0); }); });
+        if (plusBeine.length && pinBeine.length && !diagonal) {
+          melde("fehler", "taster4_nicht_gegenueber", { pin: Pins.langerName(pins[0]) }, ids(kabelIn(plusSeite).concat(kabelIn(pinSeite))), []);
+          return;
+        }
       }
       if (hatGnd(pinSeite)) {
         melde("fehler", "taster4_gnd_direkt", {}, ids(kabelIn(pinSeite)), []);
@@ -400,12 +420,11 @@ var Pruefung = (function () {
       }
 
       // Der Pulldown-Widerstand: ein Bein auf der Pin-Seite, eins an GND
-      var wl = W + ".links", wr = W + ".rechts";
-      var steckt = function (s) { return kabel.some(function (k) { return (k.a === s && Pins.bauteil(k.b) === BB) || (k.b === s && Pins.bauteil(k.a) === BB); }); };
-      if (!steckt(wl) && !steckt(wr)) { melde("fehlt", "widerstand_fehlt", {}, [], [wl, wr]); return; }
-      if (!steckt(wl) || !steckt(wr)) { melde("fehlt", "widerstand_bein_fehlt", {}, [], [steckt(wl) ? wr : wl]); return; }
+      var wid = (widerstaende || [])[0];
+      if (!wid) { melde("fehlt", "widerstand_fehlt", {}, [], []); return; }
+      var wl = wid.a, wr = wid.b;
       var nl = netz(wl), nr = netz(wr);
-      var wKabel = bbKabel.filter(function (k) { return [k.a, k.b].indexOf(wl) >= 0 || [k.a, k.b].indexOf(wr) >= 0; });
+      var wKabel = [wid];
       if (nl === nr) { melde("fehler", "widerstand_gleiche_reihe", {}, ids(wKabel), []); return; }
       var amPin = nl === pinSeite ? wl : nr === pinSeite ? wr : null;
       if (!amPin) { melde("fehler", "widerstand_nicht_am_pin", {}, ids(wKabel), []); return; }

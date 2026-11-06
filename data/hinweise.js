@@ -207,6 +207,10 @@ DATEN.hinweise = {
     "text": "{pin} und 5V hängen an derselben Seite des Tasters (die Beine a und c bzw. b und d sind innen verbunden). Dann ist der Pin immer HIGH. Schließe diagonal an.",
     "dokument": "Arbeitsblatt Taster Theorie"
   },
+  "taster4_nicht_gegenueber": {
+    "text": "5V und {pin} hängen an zwei Beinen auf derselben Seite des Breadboards (beide oben oder beide unten). Schließe den Taster diagonal an: an zwei gegenüberliegende Ecken, also Bein a und d oder Bein b und c.",
+    "dokument": "Arbeitsblatt Taster Theorie"
+  },
   "taster4_pin_fehlt": {
     "text": "Das diagonale Bein des Tasters ist noch mit keinem Digitalpin verbunden.",
     "dokument": "Aufschrieb Taster"
@@ -215,17 +219,9 @@ DATEN.hinweise = {
     "text": "Die Seite des Tasters mit dem Pin hängt direkt an GND. Beim Drücken gäbe das einen Kurzschluss von 5V nach GND. Dazwischen gehört der 10-kΩ-Widerstand.",
     "dokument": "Aufschrieb Taster"
   },
-  "widerstand_direkt": {
-    "text": "Ein Bein des Widerstands steckt an {ziel}. Der Widerstand wird mit beiden Beinen ins Breadboard gesteckt.",
-    "dokument": "Arbeitsblatt Ampel und PAP"
-  },
   "widerstand_fehlt": {
-    "text": "Der 10-kΩ-Widerstand fehlt noch.",
+    "text": "Der 10-kΩ-Widerstand fehlt noch. Tippe auf „Widerstand einsetzen“ und dann auf die zwei Löcher, in die seine Beine sollen.",
     "dokument": "Aufschrieb Taster"
-  },
-  "widerstand_bein_fehlt": {
-    "text": "Ein Bein des Widerstands steckt noch nicht im Breadboard.",
-    "dokument": "Arbeitsblatt Ampel und PAP"
   },
   "widerstand_gleiche_reihe": {
     "text": "Beide Beine des Widerstands stecken in derselben Reihe. Die Löcher einer Reihe sind leitend verbunden, so wirkt der Widerstand nicht.",

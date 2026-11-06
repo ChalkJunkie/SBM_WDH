@@ -346,9 +346,10 @@ DATEN.aufgaben = [
   {
     "id": 6,
     "titel": "Vierbeiniger Taster und Servo",
-    "auftrag": "Der Servo aus Aufgabe 1 ist schon angeschlossen (helle Kabel). Der vierbeinige Taster steckt schon auf dem Breadboard. Schließe ihn so an, wie ihr es im Unterricht gelernt habt: mit dem 10-kΩ-Widerstand als Pulldown. Die Beine des Widerstands steckst du in Löcher des Breadboards.",
-    "auftragSelbst": "Schließe den Servo an. Der vierbeinige Taster steckt schon auf dem Breadboard: Schließe ihn mit dem 10-kΩ-Widerstand als Pulldown an. Die Beine des Widerstands steckst du in Löcher des Breadboards.",
-    "bauteile": ["arduino", "breadboard", "widerstand", "servo"],
+    "auftrag": "Der Servo aus Aufgabe 1 ist schon angeschlossen (helle Kabel). Der vierbeinige Taster steckt schon auf dem Breadboard. Schließe ihn so an, wie ihr es im Unterricht gelernt habt: mit dem 10-kΩ-Widerstand als Pulldown. Den Widerstand steckst du mit „Widerstand einsetzen“ direkt ins Breadboard.",
+    "auftragSelbst": "Schließe den Servo an. Der vierbeinige Taster steckt schon auf dem Breadboard: Schließe ihn mit dem 10-kΩ-Widerstand als Pulldown an. Den Widerstand steckst du mit „Widerstand einsetzen“ direkt ins Breadboard.",
+    "bauteile": ["arduino", "breadboard", "servo"],
+    "widerstand": true,
     "bausteine": ["servo", "taster4"],
     "vorgaenger": 1,
     "dokumente": ["Aufschrieb Taster", "Arbeitsblatt Taster Theorie", "Arbeitsblatt Taster Praxis"],

@@ -337,6 +337,10 @@ Schaltbrett.prototype._antippen = function (cx, cy, typ, ziel) {
   var kabelNahe = this.kabelInDerNaehe(cx, cy, typ === "touch" ? 14 : 8);
   // Liegt ein Kabel unter dem Finger und ist kein Pin genau getroffen,
   // dann ist das Kabel gemeint.
+  // Der Widerstand verdeckt die Löcher unter ihm: Antippen meint den Widerstand.
+  var self = this;
+  var istWiderstand = kabelNahe.length && this.kabel.some(function (k) { return k.id === kabelNahe[0].id && k.widerstand; });
+  if (istWiderstand) { this.optionen.beimKabel(kabelNahe[0].id, typ); return; }
   if (kabelNahe.length && (!nahe.length || nahe[0].abstand > 8)) { this.optionen.beimKabel(kabelNahe, typ); return; }
   if (nahe.length > 0) {
     this.optionen.beimPin(nahe, typ, kabelNahe.length ? kabelNahe[0].id : null);
@@ -372,7 +376,9 @@ Schaltbrett.prototype.kabelInDerNaehe = function (cx, cy, radiusPx) {
 // um sie herum gelegt, entfernte Kabel geben ihren Platz frei. Danach
 // werden Kabel mit Kreuzungen wenn möglich neu gelegt.
 Schaltbrett.prototype.setzeKabel = function (kabel) {
-  var self = this, neu = {};
+  var self = this, neu = {}, alle = kabel;
+  // Der Widerstand steckt direkt im Breadboard: kein Kabelweg nötig
+  kabel = kabel.filter(function (k) { return !k.widerstand; });
   kabel.forEach(function (k) { neu[k.id] = k; });
   Object.keys(this.wege.belegung).forEach(function (id) {
     var r = self.wege.belegung[id], k = neu[id];
@@ -381,8 +387,8 @@ Schaltbrett.prototype.setzeKabel = function (kabel) {
   var fehlend = kabel.filter(function (k) { return !self.wege.belegung[k.id]; });
   if (fehlend.length > 1) fehlend = this.wege.sortiere(fehlend);
   fehlend.forEach(function (k) { self.wege.lege(k.id, k.a, k.b); });
-  this._routenUebernehmen(kabel);
-  this.kabel = kabel;
+  this.kabel = alle;
+  this._routenUebernehmen(alle);
   this.zeichneKabel();
   // Danach kurz "aufräumen" (Kreuzungen auflösen, mit Zeitlimit). Das passiert
   // erst nach dem Zeichnen, damit das neue Kabel sofort zu sehen ist.
@@ -405,6 +411,70 @@ Schaltbrett.prototype._routenUebernehmen = function (kabel) {
     var bel = self.wege.belegung[k.id];
     self.routen[k.id] = { punkte: bel ? bel.punkte : [self.pinPosition(k.a), self.pinPosition(k.b)] };
   });
+  this._breadboardSpuren(kabel);
+};
+
+// Breadboard: Ein Kabel verlässt sein Loch gerade nach außen. Liegt auf
+// diesem Stück ein anderes belegtes Loch oder der Widerstand, würde das
+// Kabel es verdecken. Dann läuft es stattdessen in der Lücke zwischen zwei
+// Lochreihen (halber Lochabstand daneben) nach außen.
+Schaltbrett.prototype._breadboardSpuren = function (kabel) {
+  var self = this, BB = "breadboard";
+  if (this.bauteile.indexOf(BB) < 0) return;
+  var halb = 14.4 * (DATEN.schaltbrett[BB].skala || 1);
+  var loecher = [], striche = [], spuren = [];
+  kabel.forEach(function (k) {
+    [k.a, k.b].forEach(function (s) { if (Pins.bauteil(s) === BB) loecher.push({ s: s, p: self.pinPosition(s) }); });
+    if (k.widerstand) striche.push([self.pinPosition(k.a), self.pinPosition(k.b)]);
+  });
+  function abstandZuStrecke(p, a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+    var t = l2 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0;
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+  }
+  function schneiden(a, b, c, d) {
+    function o(p, q, r) { return (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x); }
+    return o(a, b, c) * o(a, b, d) < 0 && o(c, d, a) * o(c, d, b) < 0;
+  }
+  // Ist die Strecke a-b frei (kein belegtes Loch außer "eigenes", kein Widerstand, keine andere Spur)?
+  function frei(a, b, eigenes, mitSpuren) {
+    if (loecher.some(function (l) { return l.s !== eigenes && abstandZuStrecke(l.p, a, b) < 6; })) return false;
+    if (striche.some(function (w) { return schneiden(a, b, w[0], w[1]) || abstandZuStrecke(w[0], a, b) < 6 || abstandZuStrecke(w[1], a, b) < 6; })) return false;
+    if (mitSpuren && spuren.some(function (sp) {
+      return abstandZuStrecke(sp[0], a, b) < 4 || abstandZuStrecke(sp[1], a, b) < 4 ||
+             abstandZuStrecke(a, sp[0], sp[1]) < 4 || abstandZuStrecke(b, sp[0], sp[1]) < 4;
+    })) return false;
+    return true;
+  }
+  kabel.forEach(function (k) {
+    if (k.widerstand || !self.routen[k.id]) return;
+    [k.a, k.b].forEach(function (s, ende) {
+      if (Pins.bauteil(s) !== BB || !self.wege.pins[s]) return;
+      var pk = self.routen[k.id].punkte.slice();
+      if (ende === 1) pk.reverse();
+      if (pk.length < 2) return;
+      var loch = pk[0], aussen = self.wege.pins[s].ende;
+      var d = RICHTUNG[self.wege.pins[s].richtung], n = { x: -d.y, y: d.x };
+      if (frei(loch, aussen, s, false)) return;          // nichts im Weg
+      // Seite bevorzugen, in die das Kabel danach ohnehin weiterläuft
+      var nach = pk[1];
+      var nahAussen = Math.abs((nach.x - aussen.x) * d.x + (nach.y - aussen.y) * d.y) < 1;
+      var richtungDanach = (nahAussen && pk[2]) ? (pk[2].x - nach.x) * n.x + (pk[2].y - nach.y) * n.y : 0;
+      var seiten = richtungDanach < 0 ? [-1, 1] : [1, -1];
+      for (var i = 0; i < 2; i++) {
+        var off = { x: n.x * halb * seiten[i], y: n.y * halb * seiten[i] };
+        var a = { x: loch.x + off.x, y: loch.y + off.y }, b = { x: aussen.x + off.x, y: aussen.y + off.y };
+        if (!frei(a, b, s, true)) continue;
+        spuren.push([a, b]);
+        var neu;
+        if (nahAussen && pk[2] && richtungDanach * seiten[i] > 0) neu = [loch, a, b].concat(pk.slice(2));
+        else neu = [loch, a, b, aussen].concat(nahAussen ? pk.slice(2) : pk.slice(1));
+        if (ende === 1) neu.reverse();
+        self.routen[k.id] = { punkte: neu };
+        return;
+      }
+    });
+  });
 };
 
 // markierungen: { kabel: { id: nummer }, pins: { schluessel: nummer } }
@@ -419,7 +489,9 @@ Schaltbrett.prototype.zeichneKabel = function () {
   this.ebeneMarken.innerHTML = "";
   var m = this.markierungen;
 
+  var widerstaende = [];
   this.kabel.forEach(function (k) {
+    if (k.widerstand) { widerstaende.push(k); return; }
     var a = self.pinPosition(k.a), b = self.pinPosition(k.b);
     var pfad = Kabelwege.pfad(self.routen[k.id].punkte);
     var g = svgElement("g", { "class": "kabel" + (k.gesperrt ? " gesperrt" : "") + (m.kabel[k.id] ? " falsch" : "") });
@@ -437,6 +509,9 @@ Schaltbrett.prototype.zeichneKabel = function () {
     if (m.kabel[k.id]) self._marke(pfad.mitte, m.kabel[k.id], "falsch");
   });
 
+  // Widerstände liegen über den Kabeln (sie stecken ja direkt im Brett)
+  widerstaende.forEach(function (k) { self._zeichneWiderstand(k, m.kabel[k.id]); });
+
   Object.keys(m.pins || {}).forEach(function (s) {
     var p = self.pinPosition(s);
     self.ebeneMarken.appendChild(svgElement("circle", { cx: p.x, cy: p.y, r: 14, "class": "pin-fehlt-ring" }));
@@ -447,6 +522,28 @@ Schaltbrett.prototype.zeichneKabel = function () {
     var pa = this.pinPosition(this.auswahl);
     this.ebeneMarken.appendChild(svgElement("circle", { cx: pa.x, cy: pa.y, r: 13, "class": "pin-auswahl" }));
   }
+};
+
+// 10-kΩ-Widerstand zwischen zwei Löchern: graue Beine, beiger Körper mit
+// den Farbringen Braun-Schwarz-Orange-Gold
+Schaltbrett.prototype._zeichneWiderstand = function (k, marke) {
+  var a = this.pinPosition(k.a), b = this.pinPosition(k.b);
+  var dx = b.x - a.x, dy = b.y - a.y, laenge = Math.hypot(dx, dy) || 1;
+  var winkel = Math.atan2(dy, dx) * 180 / Math.PI;
+  var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  var koerper = Math.max(16, Math.min(40, laenge - 12)), hoehe = 13;
+  var g = svgElement("g", { "class": "widerstand" + (k.gesperrt ? " gesperrt" : "") + (marke ? " falsch" : "") });
+  g.appendChild(svgElement("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, "class": "widerstand-bein" }));
+  [a, b].forEach(function (p) { g.appendChild(svgElement("circle", { cx: p.x, cy: p.y, r: 3.5, "class": "widerstand-fuss" })); });
+  var t = svgElement("g", { transform: "translate(" + mx + " " + my + ") rotate(" + winkel + ")" });
+  t.appendChild(svgElement("rect", { x: -koerper / 2, y: -hoehe / 2, width: koerper, height: hoehe, rx: 5, "class": "widerstand-koerper" }));
+  [[-0.3, "#7a4a1e"], [-0.12, "#1e1e1e"], [0.06, "#f08a1c"], [0.3, "#c9a227"]].forEach(function (r) {
+    t.appendChild(svgElement("rect", { x: r[0] * koerper - 1.8, y: -hoehe / 2, width: 3.6, height: hoehe, fill: r[1] }));
+  });
+  g.appendChild(t);
+  if (marke) g.appendChild(svgElement("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, "class": "kabel-falsch-muster" }));
+  this.ebeneKabel.appendChild(g);
+  if (marke) this._marke({ x: mx, y: my - 24 }, marke, "falsch");
 };
 
 // Vorgegebene Kabel: dieselbe Farbe, nur heller (Pastellton)

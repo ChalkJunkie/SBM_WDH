@@ -13,7 +13,7 @@
 // =====================================================================
 var PAP = (function () {
   var NS = "http://www.w3.org/2000/svg";
-  var BREITE = 190, ABSTAND = 26, SPALTE = 225, ZEILE = 17;
+  var BREITE = 230, ABSTAND = 18, SPALTE = 260, ZEILE = 16, ZEICHEN = 28;
 
   function el(name, a) {
     var e = document.createElementNS(NS, name);
@@ -34,7 +34,7 @@ var PAP = (function () {
   function hoehe(s) {
     if (s.art === "start") return 38;
     if (s.art === "frage") return Math.max(84, 44 + umbrechen(s.text, 16).length * ZEILE);
-    return 18 + umbrechen(s.text, 22).length * ZEILE;
+    return 18 + umbrechen(s.text, ZEICHEN).length * ZEILE;
   }
 
   function text(g, s, cx, y, h, max) {
@@ -74,12 +74,12 @@ var PAP = (function () {
     var h = hoehe(s), w = BREITE;
     if (s.art === "start") {
       g.appendChild(el("rect", { x: cx - 75, y: y, width: 150, height: h, rx: 19, "class": "pap-start" }));
-      text(g, s, cx, y, h, 22);
+      text(g, s, cx, y, h, ZEICHEN);
       return { unten: y + h, maxX: cx + 75, box: { oben: y, hoehe: h, links: cx - 75, rechts: cx + 75 } };
     }
     if (s.art === "schritt") {
       g.appendChild(el("rect", { x: cx - w / 2, y: y, width: w, height: h, "class": "pap-schritt" }));
-      text(g, s, cx, y, h, 22);
+      text(g, s, cx, y, h, ZEICHEN);
       return { unten: y + h, maxX: cx + w / 2, box: { oben: y, hoehe: h, links: cx - w / 2, rechts: cx + w / 2 } };
     }
     if (s.art === "schleife") {
@@ -144,7 +144,7 @@ var PAP = (function () {
     var cx = BREITE / 2 + 40;
     var r = folge(g, schritte, cx, 10, false);
     svg.setAttribute("viewBox", "0 0 " + (r.maxX + 12) + " " + (r.unten + 12));
-    svg.style.maxWidth = (r.maxX + 12) + "px";
+    // Größe passt sich dem Platz an (Seitenverhältnis bleibt), siehe CSS .pap
     behaelter.innerHTML = "";
     behaelter.appendChild(svg);
   }

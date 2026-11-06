@@ -127,6 +127,12 @@ h2 { font-size: 1.2rem; margin: 0 0 .5rem; }
 .kabel.gesperrt .kabel-rand { stroke: rgba(0, 0, 0, .28); }
 .kabel.gesperrt .kabel-stecker { stroke: rgba(0, 0, 0, .3); }
 .kabel-falsch-muster { fill: none; stroke: #fff; stroke-width: 2.5; stroke-dasharray: 8 8; pointer-events: none; }
+.widerstand { pointer-events: none; }
+.widerstand-bein { stroke: #8d8d8d; stroke-width: 3; stroke-linecap: round; }
+.widerstand-fuss { fill: #6f6f6f; }
+.widerstand-koerper { fill: #e3c28f; stroke: #8a6a3a; stroke-width: 1.2; }
+.widerstand.falsch .widerstand-koerper { stroke: #c62828; stroke-width: 2.5; }
+.knopf.aktiv-modus { background: var(--info-hell); border-color: var(--akzent); box-shadow: inset 0 0 0 2px var(--akzent); }
 .marke { pointer-events: none; }
 .marke circle { stroke: #fff; stroke-width: 3; }
 .marke text { font: bold 18px sans-serif; fill: #fff; }
@@ -316,7 +322,7 @@ body.zieht-karte { cursor: grabbing; }
 }
 
 /* ---------- Fehlersuche: links PAP, rechts Code, unten Fußleiste ---------- */
-.fs-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.5fr); grid-template-rows: minmax(0, 1fr); }
+.fs-spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.3fr); grid-template-rows: minmax(0, 1fr); }
 .fs-links { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem; background: var(--flaeche); border-right: 2px solid var(--rand); display: flex; flex-direction: column; gap: .8rem; }
 .fs-links > * { flex-shrink: 0; }
 .fs-links h2 { margin: 0; font-size: 1.1rem; }
@@ -348,8 +354,8 @@ body.zieht-karte { cursor: grabbing; }
 .korrektur-code { display: block; margin-top: .25rem; font: 15px/1.4 ui-monospace, Menlo, monospace; }
 .erklaerung .meldung-dokument { color: #3b4a3e; }
 @media (orientation: portrait) {
-  .fs-spiel { grid-template-columns: minmax(230px, 0.85fr) minmax(0, 1.4fr); }
-  .seite-fehlersuche .codeliste { font-size: 14px; }
+  .fs-spiel { grid-template-columns: minmax(230px, 1fr) minmax(0, 1.05fr); }
+  .seite-fehlersuche .codeliste { font-size: 13px; }
 }
 
 /* ---------- Glückwunsch (alle Sterne) ---------- */
@@ -402,3 +408,26 @@ body.zieht-karte { cursor: grabbing; }
 @media (max-width: 640px) { .spalten { grid-template-columns: 1fr; } }
 .quizantwort:disabled { opacity: .5; }
 .quizantwort.gewaehlt-richtig:disabled { opacity: 1; }
+
+/* Fehlersuche: Ablaufplan und Verkabelung ohne Scrollen sichtbar.
+   Der PAP füllt den freien Platz und wird bei Bedarf kleiner. */
+.fs-links { overflow: hidden; gap: .5rem; padding: .6rem .8rem; }
+.fs-links h2 { font-size: 1rem; }
+.fs-links .pap-behaelter { flex: 1 1 auto; flex-shrink: 1; min-height: 0; }
+.fs-links .pap { width: 100%; height: 100%; }
+.fs-links .verkabelung th, .fs-links .verkabelung td { padding: .25rem .5rem; font-size: .88rem; }
+.sortkarte { touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.sortkarte.geist { position: fixed; z-index: 60; max-width: 360px; pointer-events: none; opacity: .93; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.sortkarte.wird-gezogen { opacity: .35; }
+.spalte.ueber, .kartenstapel.ueber { border-color: var(--akzent); background: var(--info-hell); }
+/* Sortieren: Kartenstapel oben (höchstens knapp die Hälfte), die beiden
+   Spalten darunter. Beides bleibt sichtbar, jeder Teil hat bei Bedarf
+   einen eigenen Bildlauf. */
+.vergleich.sortieren-modus { overflow: hidden; gap: .6rem; padding: .7rem .9rem; }
+.vergleich.sortieren-modus > .auftrag { margin: 0; }
+.vergleich.sortieren-modus .kartenstapel { flex: 0 1 auto; max-height: 46%; overflow-y: auto; -webkit-overflow-scrolling: touch; gap: .4rem; padding: .5rem; }
+.vergleich.sortieren-modus .spalten { flex: 1 1 0; min-height: 190px; }
+.vergleich.sortieren-modus .spalte { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.vergleich.sortieren-modus .spalte-kopf img { height: 48px; }
+.vergleich.sortieren-modus .sortkarte { padding: .4rem .6rem; font-size: .93rem; }
+.vergleich.sortieren-modus .code-klein { font-size: 14px; }

@@ -108,7 +108,7 @@ DATEN.programme = [
   {
     "id": "servo_taster",
     "titel": "Servo und Taster",
-    "auftrag": "Solange der Taster gedrückt ist, fährt der Servo auf 90 Grad. Sonst steht er auf der Startposition 0 Grad.",
+    "auftrag": "Solange der Taster gedrückt ist, fährt der Servo auf 90 Grad. Sonst fährt er zurück auf 0 Grad.",
     "dokument": "Arbeitsblatt Servomotor",
     "zeilen": [
       { "code": "#include <Servo.h>", "kommentar": "Bindet die Servo-Bibliothek ein. Sie erzeugt die Signale für den Servo." },
@@ -118,7 +118,6 @@ DATEN.programme = [
       { "code": "{" },
       { "code": "  S1.attach(9);", "kommentar": "Der Servo S1 hängt an Pin 9." },
       { "code": "  pinMode(taster, INPUT_PULLUP);", "kommentar": "Der Taster-Pin wird ein Eingang mit internem Pullup-Widerstand.", "dokument": "Aufschrieb Taster" },
-      { "code": "  S1.write(0);", "kommentar": "Startposition: Servo auf 0 Grad." },
       { "code": "}" },
       { "code": "void loop()" },
       { "code": "{", "kommentar": "Öffnet den Loop-Teil." },
@@ -150,7 +149,6 @@ DATEN.programme = [
       { "code": "{" },
       { "code": "  S1.attach(9);", "kommentar": "Der Servo S1 hängt an Pin 9.", "dokument": "Arbeitsblatt Servomotor" },
       { "code": "  pinMode(taster, INPUT);", "kommentar": "Der Taster-Pin wird ein Eingang ohne internen Widerstand – der Pulldown-Widerstand steckt auf dem Breadboard.", "dokument": "Aufschrieb Taster" },
-      { "code": "  S1.write(0);", "kommentar": "Startposition: Servo auf 0 Grad.", "dokument": "Arbeitsblatt Servomotor" },
       { "code": "}" },
       { "code": "void loop()" },
       { "code": "{", "kommentar": "Öffnet den Loop-Teil." },
