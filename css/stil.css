@@ -351,3 +351,11 @@ body.zieht-karte { cursor: grabbing; }
   .fs-spiel { grid-template-columns: minmax(230px, 0.85fr) minmax(0, 1.4fr); }
   .seite-fehlersuche .codeliste { font-size: 14px; }
 }
+
+/* ---------- Glückwunsch (alle Sterne) ---------- */
+.dialog.glueckwunsch { text-align: center; border: 4px solid var(--stern); }
+.dialog.glueckwunsch .dialog-knoepfe { justify-content: center; }
+.sternregen { font-size: 1.6rem; color: var(--stern); line-height: 1.2; margin: .2rem 0 .6rem; }
+.sternregen span { display: inline-block; animation: sternpop .6s ease-out both; }
+@keyframes sternpop { from { transform: scale(0) rotate(-90deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sternregen span { animation: none; } }

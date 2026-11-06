@@ -1,5 +1,5 @@
 // =====================================================================
-// data/fehlersuche.js – Level 2, Teil B: Fehlersuche
+// data/fehlersuche.js – Bereich 2, Teil B: Fehlersuche
 // ---------------------------------------------------------------------
 // Jede Aufgabe:
 //   id           Nummer (in der Adresse: fehlersuche.html?aufgabe=1)
@@ -10,6 +10,7 @@
 //                  {"art":"start","text":"Start"}           abgerundet
 //                  {"art":"schritt","text":"LED an"}        Rechteck
 //                  {"art":"frage","text":"Taster gedrückt?","ja":[...],"nein":[...]}
+//                  "neinZurLetzten": true  -> nein führt in die letzte Box von ja
 //                  {"art":"schleife","schritte":[...]}      Loop (Pfeil zurück)
 //   zeilen       das Programm MIT den eingebauten Fehlern, Zeile für Zeile
 //   fehler       die falschen Zeilen:
@@ -27,60 +28,10 @@ DATEN.fehlersuche = [
   // ------------------------------------------------------------------
   {
     "id": 1,
-    "titel": "Servo (2 Fehler)",
-    "soll": "Der Servo soll abwechselnd auf 30 Grad und auf 90 Grad fahren und dort jeweils eine Sekunde bleiben.",
-    "verkabelung": ["Servo: Signal (orange) an Pin 9", "Servo: Plus (rot) an 3V3, GND (braun) an GND"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Servo an Pin 9 festlegen"}, {"art": "schleife", "schritte": [{"art": "schritt", "text": "Servo auf 30 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}, {"art": "schritt", "text": "Servo auf 90 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}]}],
-    "zeilen": [
-      "#include <Servo.h>",
-      "Servo S1;",
-      "void setup() {",
-      "  S1.attach(8);",
-      "}",
-      "void loop() {",
-      "  S1.write(30);",
-      "  delay(1000);",
-      "  S1.write(90);",
-      "  delay(1000)",
-      "}"
-    ],
-    "fehler": [
-      { "zeile": 4, "richtig": "  S1.attach(9);", "warum": "Der Servo hängt laut Verkabelung an Pin 9, im Code steht aber Pin 8.", "dokument": "Arbeitsblatt Servomotor" },
-      { "zeile": 10, "richtig": "  delay(1000);", "warum": "Am Ende des Befehls fehlt das Semikolon ;", "dokument": "Arbeitsblatt Ampel und PAP" }
-    ]
-  },
-
-  // ------------------------------------------------------------------
-  {
-    "id": 2,
-    "titel": "Servo (1 Fehler)",
-    "soll": "Der Servo soll abwechselnd auf 30 Grad und auf 90 Grad fahren und dort jeweils eine Sekunde bleiben.",
-    "verkabelung": ["Servo: Signal (orange) an Pin 9", "Servo: Plus (rot) an 3V3, GND (braun) an GND"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Servo an Pin 9 festlegen"}, {"art": "schleife", "schritte": [{"art": "schritt", "text": "Servo auf 30 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}, {"art": "schritt", "text": "Servo auf 90 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}]}],
-    "zeilen": [
-      "Servo S1;",
-      "void setup() {",
-      "  S1.attach(9);",
-      "}",
-      "void loop() {",
-      "  S1.write(30);",
-      "  delay(1000);",
-      "  S1.write(90);",
-      "  delay(1000);",
-      "}"
-    ],
-    "fehler": [
-      { "zeile": 1, "fehlt": true, "richtig": "#include <Servo.h>", "warum": "Vor dieser Zeile fehlt #include <Servo.h>. Ohne die Servo-Bibliothek kennt der Arduino „Servo“ nicht. Die Fehlermeldung erscheint genau in dieser Zeile.", "dokument": "Arbeitsblatt Servomotor" }
-    ]
-  },
-
-  // ------------------------------------------------------------------
-  {
-    "id": 3,
     "titel": "Taster mit LED (2 Fehler)",
     "soll": "Wird der zweibeinige Taster gedrückt, soll die LED fünf Sekunden lang leuchten.",
-    "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "LED (mit Vorwiderstand) an Pin 6"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "LED an"}, {"art": "schritt", "text": "5 Sekunden warten"}, {"art": "schritt", "text": "LED aus"}], "nein": [{"art": "schritt", "text": "LED aus"}]}]}],
+    "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND","LED (mit Vorwiderstand) an Pin 6"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"LED an"},{"art":"schritt","text":"5 Sekunden warten"},{"art":"schritt","text":"LED aus"}],"neinZurLetzten":true}]}],
     "zeilen": [
       "int LED = 6;",
       "int taster = 2;",
@@ -104,18 +55,18 @@ DATEN.fehlersuche = [
       "}"
     ],
     "fehler": [
-      { "zeile": 6, "richtig": "  pinMode(taster, INPUT_PULLUP);", "warum": "Beim zweibeinigen Taster wird der interne Pullup-Widerstand gebraucht: INPUT_PULLUP statt INPUT.", "dokument": "Aufschrieb Taster" },
-      { "zeile": 10, "richtig": "  if (digitalRead(taster) == LOW)", "warum": "Mit INPUT_PULLUP ist der Pin LOW, wenn der Taster gedrückt ist. Die Abfrage muss also == LOW heißen.", "dokument": "Arbeitsblatt Taster Theorie" }
+      {"zeile": 6, "richtig": "  pinMode(taster, INPUT_PULLUP);", "warum": "Beim zweibeinigen Taster wird der interne Pullup-Widerstand gebraucht: INPUT_PULLUP statt INPUT.", "dokument": "Aufschrieb Taster"},
+      {"zeile": 10, "richtig": "  if (digitalRead(taster) == LOW)", "warum": "Mit INPUT_PULLUP ist der Pin LOW, wenn der Taster gedrückt ist. Die Abfrage muss also == LOW heißen.", "dokument": "Arbeitsblatt Taster Theorie"}
     ]
   },
 
   // ------------------------------------------------------------------
   {
-    "id": 4,
+    "id": 2,
     "titel": "Taster mit LED (2 Fehler)",
     "soll": "Wird der zweibeinige Taster gedrückt, soll die LED fünf Sekunden lang leuchten.",
-    "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "LED (mit Vorwiderstand) an Pin 6"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "LED an"}, {"art": "schritt", "text": "5 Sekunden warten"}, {"art": "schritt", "text": "LED aus"}], "nein": [{"art": "schritt", "text": "LED aus"}]}]}],
+    "verkabelung": ["Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND","LED (mit Vorwiderstand) an Pin 6"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"LED an"},{"art":"schritt","text":"5 Sekunden warten"},{"art":"schritt","text":"LED aus"}],"neinZurLetzten":true}]}],
     "zeilen": [
       "int LED = 6;",
       "int taster = 7;",
@@ -138,8 +89,69 @@ DATEN.fehlersuche = [
       "}"
     ],
     "fehler": [
-      { "zeile": 2, "richtig": "int taster = 2;", "warum": "Der Taster hängt laut Verkabelung an Pin 2, im Code steht aber Pin 7.", "dokument": "Arbeitsblatt Taster Praxis" },
-      { "zeile": 5, "fehlt": true, "richtig": "  pinMode(LED, OUTPUT);", "warum": "Vor dieser Zeile fehlt pinMode(LED, OUTPUT);. Ohne diesen Befehl ist der LED-Pin kein Ausgang und die LED leuchtet nicht richtig.", "dokument": "Arbeitsblatt Taster Theorie" }
+      {"zeile": 2, "richtig": "int taster = 2;", "warum": "Der Taster hängt laut Verkabelung an Pin 2, im Code steht aber Pin 7.", "dokument": "Arbeitsblatt Taster Praxis"},
+      {"zeile": 5, "fehlt": true, "richtig": "  pinMode(LED, OUTPUT);", "warum": "Vor dieser Zeile fehlt pinMode(LED, OUTPUT);. Ohne diesen Befehl ist der LED-Pin kein Ausgang und die LED leuchtet nicht richtig.", "dokument": "Arbeitsblatt Taster Theorie"}
+    ]
+  },
+
+  // ------------------------------------------------------------------
+  {
+    "id": 3,
+    "titel": "Servo (3 Fehler)",
+    "soll": "Der Servo soll abwechselnd auf 30 Grad und auf 90 Grad fahren und dort jeweils eine Sekunde bleiben.",
+    "verkabelung": ["Servo: Signal (orange) an Pin 9","Servo: Plus (rot) an 3V3, GND (braun) an GND"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Servo-Bibliothek einbinden"},{"art":"schritt","text":"Servo an Pin 9 festlegen"},{"art":"schleife","schritte":[{"art":"schritt","text":"Servo auf 30 Grad"},{"art":"schritt","text":"1 Sekunde warten"},{"art":"schritt","text":"Servo auf 90 Grad"},{"art":"schritt","text":"1 Sekunde warten"}]}],
+    "zeilen": [
+      "Servo S1;",
+      "void setup() {",
+      "  S1.attach(8);",
+      "}",
+      "void loop() {",
+      "  S1.write(30);",
+      "  delay(1000);",
+      "  S1.write(90);",
+      "  delay(1000)",
+      "}"
+    ],
+    "fehler": [
+      {"zeile": 1, "fehlt": true, "richtig": "#include <Servo.h>", "warum": "Vor dieser Zeile fehlt #include <Servo.h>. Ohne die Servo-Bibliothek kennt der Arduino „Servo“ nicht. Die Fehlermeldung erscheint genau in dieser Zeile.", "dokument": "Arbeitsblatt Servomotor"},
+      {"zeile": 3, "richtig": "  S1.attach(9);", "warum": "Der Servo hängt laut Verkabelung an Pin 9, im Code steht aber Pin 8.", "dokument": "Arbeitsblatt Servomotor"},
+      {"zeile": 9, "richtig": "  delay(1000);", "warum": "Am Ende des Befehls fehlt das Semikolon ;", "dokument": "Arbeitsblatt Ampel und PAP"}
+    ]
+  },
+
+  // ------------------------------------------------------------------
+  {
+    "id": 4,
+    "titel": "Servo und Taster (2 Fehler)",
+    "soll": "Solange der Taster gedrückt ist, soll der Servo auf 90 Grad fahren. Sonst steht er auf 0 Grad.",
+    "verkabelung": ["Servo: Signal (orange) an Pin 9","Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Servo-Bibliothek einbinden"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schritt","text":"Servo auf 0 Grad (Startposition)"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"Servo auf 90 Grad"},{"art":"schritt","text":"1 Sekunde warten"}],"nein":[{"art":"schritt","text":"Servo auf 0 Grad"}]}]}],
+    "zeilen": [
+      "#include <Servo.h>",
+      "Servo S1;",
+      "int taster = 2;",
+      "void setup()",
+      "{",
+      "  pinMode(taster, INPUT_PULLUP);",
+      "  S1.write(0);",
+      "}",
+      "void loop()",
+      "{",
+      "  if (digitalRead(taster) == HIGH)",
+      "  {",
+      "    S1.write(90);",
+      "    delay(1000);",
+      "  }",
+      "  else",
+      "  {",
+      "    S1.write(0);",
+      "  }",
+      "}"
+    ],
+    "fehler": [
+      {"zeile": 6, "fehlt": true, "richtig": "  S1.attach(9);", "warum": "Vor dieser Zeile fehlt S1.attach(9);. Ohne attach weiß der Arduino nicht, an welchem Pin der Servo hängt.", "dokument": "Arbeitsblatt Servomotor"},
+      {"zeile": 11, "richtig": "  if (digitalRead(taster) == LOW)", "warum": "Mit INPUT_PULLUP ist der Pin LOW, wenn der Taster gedrückt ist. Die Abfrage muss also == LOW heißen.", "dokument": "Arbeitsblatt Taster Theorie"}
     ]
   },
 
@@ -148,8 +160,8 @@ DATEN.fehlersuche = [
     "id": 5,
     "titel": "DC-Motor (2 Fehler)",
     "soll": "Der Motor soll sich zwei Sekunden in die eine Richtung drehen, zwei Sekunden in die andere Richtung und dann zwei Sekunden stillstehen.",
-    "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8", "DC-Motor an Klemme Motor B", "Batterie in der Strombuchse, VIN an +12V, GND an GND"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schleife", "schritte": [{"art": "schritt", "text": "Motor dreht in eine Richtung (Geschwindigkeit 200)"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor dreht andersherum"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor aus"}, {"art": "schritt", "text": "2 Sekunden warten"}]}],
+    "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8","DC-Motor an Klemme Motor B","Batterie in der Strombuchse, VIN an +12V, GND an GND"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"schritt","text":"Motor dreht in eine Richtung (Geschwindigkeit 200)"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor dreht andersherum"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor aus"},{"art":"schritt","text":"2 Sekunden warten"}]}],
     "zeilen": [
       "int ENB = 2;",
       "int in4 = 7;",
@@ -175,77 +187,37 @@ DATEN.fehlersuche = [
       "}"
     ],
     "fehler": [
-      { "zeile": 1, "richtig": "int ENB = 3;", "warum": "ENB hängt laut Verkabelung an Pin 3. Im Code steht Pin 2, und Pin 2 hat kein ~: Mit analogWrite ließe sich dort die Geschwindigkeit gar nicht steuern.", "dokument": "Aufschrieb Gleichstrommotor" },
-      { "zeile": 20, "richtig": "  digitalWrite(in4, LOW);", "warum": "Zum Anhalten müssen in3 und in4 beide LOW sein. Mit in4 = HIGH dreht der Motor einfach weiter.", "dokument": "Arbeitsblatt DC-Motor Theorie" }
+      {"zeile": 1, "richtig": "int ENB = 3;", "warum": "ENB hängt laut Verkabelung an Pin 3. Im Code steht Pin 2, und Pin 2 hat kein ~: Mit analogWrite ließe sich dort die Geschwindigkeit gar nicht steuern.", "dokument": "Aufschrieb Gleichstrommotor"},
+      {"zeile": 20, "richtig": "  digitalWrite(in4, LOW);", "warum": "Zum Anhalten müssen in3 und in4 beide LOW sein. Mit in4 = HIGH dreht der Motor einfach weiter.", "dokument": "Arbeitsblatt DC-Motor Theorie"}
     ]
   },
 
   // ------------------------------------------------------------------
   {
     "id": 6,
-    "titel": "Servo und Taster (2 Fehler)",
-    "soll": "Solange der Taster gedrückt ist, soll der Servo auf 90 Grad fahren. Sonst steht er auf 0 Grad.",
-    "verkabelung": ["Servo: Signal (orange) an Pin 9", "Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schritt", "text": "Servo auf 0 Grad (Startposition)"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "Servo auf 90 Grad"}, {"art": "schritt", "text": "1 Sekunde warten"}], "nein": [{"art": "schritt", "text": "Servo auf 0 Grad"}]}]}],
+    "titel": "DC-Motor und Taster (2 Fehler)",
+    "soll": "Wird der Taster gedrückt, soll sich der Motor zwei Sekunden lang drehen. Sonst ist der Motor aus.",
+    "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8","Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND","DC-Motor an Klemme Motor B, Batterie in der Strombuchse"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"Motor an (Geschwindigkeit 200)"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor aus"}],"neinZurLetzten":true}]}],
     "zeilen": [
-      "#include <Servo.h>",
-      "Servo S1;",
-      "int taster = 2;",
-      "void setup()",
-      "{",
-      "  pinMode(taster, INPUT_PULLUP);",
-      "  S1.write(0);",
-      "}",
-      "void loop()",
-      "{",
-      "  if (digitalRead(taster) == HIGH)",
-      "  {",
-      "    S1.write(90);",
-      "    delay(1000);",
-      "  }",
-      "  else",
-      "  {",
-      "    S1.write(0);",
-      "  }",
-      "}"
-    ],
-    "fehler": [
-      { "zeile": 6, "fehlt": true, "richtig": "  S1.attach(9);", "warum": "Vor dieser Zeile fehlt S1.attach(9);. Ohne attach weiß der Arduino nicht, an welchem Pin der Servo hängt.", "dokument": "Arbeitsblatt Servomotor" },
-      { "zeile": 11, "richtig": "  if (digitalRead(taster) == LOW)", "warum": "Mit INPUT_PULLUP ist der Pin LOW, wenn der Taster gedrückt ist. Die Abfrage muss also == LOW heißen.", "dokument": "Arbeitsblatt Taster Theorie" }
-    ]
-  },
-
-  // ------------------------------------------------------------------
-  {
-    "id": 7,
-    "titel": "DC-Motor, Taster und Servo (3 Fehler)",
-    "soll": "Wird der Taster gedrückt, soll der Servoarm auf 90 Grad fahren und der Motor sich zwei Sekunden lang drehen. Sonst ist der Motor aus und der Servo steht auf 0 Grad.",
-    "verkabelung": ["Servo: Signal (orange) an Pin 9", "Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schritt", "text": "Servo auf 0 Grad (Startposition)"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "Servoarm auf 90 Grad"}, {"art": "schritt", "text": "Motor an (Geschwindigkeit 200)"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor aus"}], "nein": [{"art": "schritt", "text": "Motor aus"}, {"art": "schritt", "text": "Servo auf 0 Grad"}]}]}],
-    "zeilen": [
-      "#include <Servo.h>",
-      "Servo S1;",
-      "int ENB = 10;",
+      "int ENB = 3;",
       "int in4 = 7;",
       "int in3 = 8;",
       "int taster = 2;",
       "void setup()",
       "{",
-      "  S1.attach(9);",
       "  pinMode(ENB, OUTPUT);",
       "  pinMode(in3, OUTPUT);",
       "  pinMode(in4, OUTPUT);",
-      "  pinMode(taster, INPUT);",
-      "  S1.write(0);",
+      "  pinMode(taster, INPUT_PULLUP);",
       "}",
       "void loop()",
       "{",
-      "  if (digitalRead(taster) == LOW)",
+      "  if (digitalRead(taster) == HIGH)",
       "  {",
-      "    S1.write(90)",
       "    digitalWrite(in3, HIGH);",
       "    digitalWrite(in4, LOW);",
-      "    analogWrite(ENB, 200);",
+      "    analogWrite(ENB, 200)",
       "    delay(2000);",
       "    digitalWrite(in3, LOW);",
       "    digitalWrite(in4, LOW);",
@@ -254,45 +226,37 @@ DATEN.fehlersuche = [
       "  {",
       "    digitalWrite(in3, LOW);",
       "    digitalWrite(in4, LOW);",
-      "    S1.write(0);",
       "  }",
       "}"
     ],
     "fehler": [
-      { "zeile": 3, "richtig": "int ENB = 3;", "warum": "ENB hängt laut Verkabelung an Pin 3, im Code steht Pin 10. Außerdem: Mit der Servo-Bibliothek ist an Pin 10 keine PWM-Ausgabe mehr möglich.", "dokument": "Arbeitsblatt Servomotor" },
-      { "zeile": 13, "richtig": "  pinMode(taster, INPUT_PULLUP);", "warum": "Beim zweibeinigen Taster wird der interne Pullup-Widerstand gebraucht: INPUT_PULLUP statt INPUT.", "dokument": "Aufschrieb Taster" },
-      { "zeile": 20, "richtig": "    S1.write(90);", "warum": "Am Ende des Befehls fehlt das Semikolon ;", "dokument": "Arbeitsblatt Ampel und PAP" }
+      {"zeile": 14, "richtig": "  if (digitalRead(taster) == LOW)", "warum": "Mit INPUT_PULLUP ist der Pin LOW, wenn der Taster gedrückt ist. Die Abfrage muss also == LOW heißen.", "dokument": "Arbeitsblatt Taster Theorie"},
+      {"zeile": 18, "richtig": "    analogWrite(ENB, 200);", "warum": "Am Ende des Befehls fehlt das Semikolon ;", "dokument": "Arbeitsblatt Ampel und PAP"}
     ]
   },
 
   // ------------------------------------------------------------------
   {
-    "id": 8,
-    "titel": "DC-Motor, Taster und Servo (2 Fehler)",
-    "soll": "Wird der Taster gedrückt, soll der Servoarm auf 90 Grad fahren und der Motor sich zwei Sekunden lang VORWÄRTS drehen (vorwärts heißt bei uns: in3 HIGH, in4 LOW). Sonst ist der Motor aus und der Servo steht auf 0 Grad.",
-    "verkabelung": ["Servo: Signal (orange) an Pin 9", "Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND", "Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8"],
-    "pap": [{"art": "start", "text": "Start"}, {"art": "schritt", "text": "Servo-Bibliothek einbinden"}, {"art": "schritt", "text": "Variablen und Werte definieren"}, {"art": "schritt", "text": "Ein- und Ausgänge definieren"}, {"art": "schritt", "text": "Servo auf 0 Grad (Startposition)"}, {"art": "schleife", "schritte": [{"art": "frage", "text": "Taster gedrückt?", "ja": [{"art": "schritt", "text": "Servoarm auf 90 Grad"}, {"art": "schritt", "text": "Motor vorwärts an: in3 HIGH, in4 LOW, Geschwindigkeit 200"}, {"art": "schritt", "text": "2 Sekunden warten"}, {"art": "schritt", "text": "Motor aus"}], "nein": [{"art": "schritt", "text": "Motor aus"}, {"art": "schritt", "text": "Servo auf 0 Grad"}]}]}],
+    "id": 7,
+    "titel": "DC-Motor und Taster (3 Fehler)",
+    "soll": "Wird der Taster gedrückt, soll sich der Motor zwei Sekunden lang VORWÄRTS drehen (vorwärts heißt bei uns: in3 HIGH, in4 LOW). Sonst ist der Motor aus.",
+    "verkabelung": ["Motortreiber: ENB an Pin 3, IN4 an Pin 7, IN3 an Pin 8","Taster: rotes Kabel an Pin 2, schwarzes Kabel an GND","DC-Motor an Klemme Motor B, Batterie in der Strombuchse"],
+    "pap": [{"art":"start","text":"Start"},{"art":"schritt","text":"Variablen und Werte definieren"},{"art":"schritt","text":"Ein- und Ausgänge definieren"},{"art":"schleife","schritte":[{"art":"frage","text":"Taster gedrückt?","ja":[{"art":"schritt","text":"Motor vorwärts an: in3 HIGH, in4 LOW, Geschwindigkeit 200"},{"art":"schritt","text":"2 Sekunden warten"},{"art":"schritt","text":"Motor aus"}],"neinZurLetzten":true}]}],
     "zeilen": [
-      "#include <Servo.h>",
-      "Servo S1;",
       "int ENB = 3;",
       "int in4 = 7;",
       "int in3 = 8;",
       "int taster = 2;",
       "void setup()",
       "{",
-      "  S1.attach(9);",
       "  pinMode(ENB, OUTPUT);",
       "  pinMode(in3, OUTPUT);",
       "  pinMode(in4, OUTPUT);",
-      "  pinMode(taster, INPUT_PULLUP);",
-      "  S1.write(0);",
       "}",
       "void loop()",
       "{",
       "  if (digitalRead(taster) == LOW)",
       "  {",
-      "    S1.write(90);",
       "    digitalWrite(in3, LOW);",
       "    digitalWrite(in4, HIGH);",
       "    analogWrite(ENB, 200);",
@@ -304,13 +268,13 @@ DATEN.fehlersuche = [
       "  {",
       "    digitalWrite(in3, LOW);",
       "    digitalWrite(in4, LOW);",
-      "    S1.write(0);",
       "  }",
       "}"
     ],
     "fehler": [
-      { "zeile": 21, "richtig": "    digitalWrite(in3, HIGH);", "warum": "in3 und in4 sind vertauscht: So dreht sich der Motor rückwärts. Vorwärts heißt hier in3 HIGH und in4 LOW.", "dokument": "Arbeitsblatt DC-Motor Theorie" },
-      { "zeile": 22, "richtig": "    digitalWrite(in4, LOW);", "warum": "in3 und in4 sind vertauscht: So dreht sich der Motor rückwärts. Vorwärts heißt hier in3 HIGH und in4 LOW.", "dokument": "Arbeitsblatt DC-Motor Theorie" }
+      {"zeile": 10, "fehlt": true, "richtig": "  pinMode(taster, INPUT_PULLUP);", "warum": "Vor dieser Zeile fehlt pinMode(taster, INPUT_PULLUP);. Ohne diesen Befehl ist der Taster-Pin kein Eingang mit Pullup-Widerstand, und der Taster wird nicht richtig erkannt.", "dokument": "Aufschrieb Taster"},
+      {"zeile": 15, "richtig": "    digitalWrite(in3, HIGH);", "warum": "in3 und in4 sind vertauscht: So dreht sich der Motor rückwärts. Vorwärts heißt hier in3 HIGH und in4 LOW.", "dokument": "Arbeitsblatt DC-Motor Theorie"},
+      {"zeile": 16, "richtig": "    digitalWrite(in4, LOW);", "warum": "in3 und in4 sind vertauscht: So dreht sich der Motor rückwärts. Vorwärts heißt hier in3 HIGH und in4 LOW.", "dokument": "Arbeitsblatt DC-Motor Theorie"}
     ]
   }
 ];

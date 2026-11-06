@@ -1,5 +1,5 @@
 // =====================================================================
-// js/verkabeln.js – Ablauf von Level 1 (Verdrahtungsaufgaben)
+// js/verkabeln.js – Ablauf von Bereich 1 (Verdrahtungsaufgaben)
 // =====================================================================
 (function () {
 
@@ -412,6 +412,7 @@
       } });
       knoepfe.push({ text: "Zur Übersicht", haupt: !naechste, aktion: function () { window.location.href = "index.html"; } });
       knoepfe.push({ text: "Hierbleiben" });
+      if (pruefeGlueckwunsch()) return;   // alle Sterne gesammelt: großer Glückwunsch
       zeigeDialog({
         titel: "Super, alles richtig!",
         html: '<p class="stern-gross" aria-hidden="true">★</p><p>Aufgabe ' + aufgabe.id + " ist gelöst.</p>",

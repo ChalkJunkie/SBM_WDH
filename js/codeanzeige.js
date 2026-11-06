@@ -1,5 +1,5 @@
 // =====================================================================
-// js/codeanzeige.js – Arduino-Code farbig darstellen (Level 2)
+// js/codeanzeige.js – Arduino-Code farbig darstellen (Bereich 2)
 // ---------------------------------------------------------------------
 // Färbt Schlüsselwörter, Befehle, Konstanten und Zahlen ein, ähnlich
 // wie in der Arduino-Software. Alles andere bleibt normal.

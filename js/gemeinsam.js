@@ -11,7 +11,7 @@
 // Versionsnummer des Spiels. Steht auch hinter allen Dateinamen in den
 // HTML-Dateien (?v=...), damit der Browser nach einem Update keine alten
 // Dateien aus dem Zwischenspeicher mischt. Wird auf der Startseite angezeigt.
-var SPIEL_VERSION = "2026-11-06d";
+var SPIEL_VERSION = "2026-11-06e";
 
 // Name, unter dem alles im localStorage abgelegt wird.
 var SPEICHER_PRAEFIX = "seifenblasen_";
@@ -63,12 +63,57 @@ var Fortschritt = {
     f[bereich][id] = true;
     Speicher.schreiben("fortschritt", f);
   },
+  // Alle Aufgaben des Spiels: [Bereichsname, Liste der IDs]
+  // (dafür müssen aufgaben.js, code.js und fehlersuche.js geladen sein)
+  liste: function () {
+    function ids(l) { return (l || []).map(function (a) { return a.id; }); }
+    return [
+      ["verkabeln", ids(DATEN.aufgaben)],
+      ["zuordnen", ids(DATEN.programme)],
+      ["fehlersuche2", ids(DATEN.fehlersuche)]
+    ];
+  },
+  // Sterne nur für Aufgaben, die es (noch) gibt
   anzahlSterne: function () {
-    var f = Fortschritt.alle(), n = 0;
-    Object.keys(f).forEach(function (b) { n += Object.keys(f[b]).length; });
+    var n = 0;
+    Fortschritt.liste().forEach(function (b) {
+      b[1].forEach(function (id) { if (Fortschritt.istGeloest(b[0], id)) n++; });
+    });
     return n;
+  },
+  anzahlAufgaben: function () {
+    var n = 0;
+    Fortschritt.liste().forEach(function (b) { n += b[1].length; });
+    return n;
+  },
+  allesGeschafft: function () {
+    var anzahl = Fortschritt.anzahlAufgaben();
+    return anzahl > 0 && Fortschritt.anzahlSterne() === anzahl;
   }
 };
+
+// ---------- Glückwunsch, wenn alle Sterne gesammelt sind ----------
+// Gibt true zurück, wenn der Glückwunsch gezeigt wurde (nur einmal).
+function pruefeGlueckwunsch() {
+  if (!Fortschritt.allesGeschafft() || Speicher.lesen("glueckwunsch_gezeigt", false)) return false;
+  Speicher.schreiben("glueckwunsch_gezeigt", true);
+  var n = Fortschritt.anzahlAufgaben();
+  var sterne = "";
+  for (var i = 0; i < Math.min(n, 30); i++) sterne += '<span style="animation-delay:' + (i * 0.06).toFixed(2) + 's">★</span>';
+  var d = zeigeDialog({
+    titel: "🎉 Herzlichen Glückwunsch!",
+    html: '<p class="sternregen" aria-hidden="true">' + sterne + "</p>" +
+      "<p><strong>Du hast alle " + n + " Aufgaben gelöst und jeden einzelnen Stern gesammelt!</strong></p>" +
+      "<p>Du kannst Servo, Taster und DC-Motor richtig verkabeln, du verstehst die Programme und du findest Fehler im Code. Das ist eine richtig starke Leistung!</p>" +
+      "<p>Viel Erfolg bei der Klassenarbeit und beim Bau deiner Seifenblasenmaschine!</p>",
+    knoepfe: [
+      { text: "Danke! 😊", haupt: true },
+      { text: "Zur Übersicht", aktion: function () { location.href = "index.html"; } }
+    ]
+  });
+  d.querySelector(".dialog").classList.add("glueckwunsch");
+  return true;
+}
 
 // ---------- Texte ----------
 

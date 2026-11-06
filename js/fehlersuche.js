@@ -1,5 +1,5 @@
 // =====================================================================
-// js/fehlersuche.js – Level 2, Teil B: Fehler im Programm finden
+// js/fehlersuche.js – Bereich 2, Teil B: Fehler im Programm finden
 // ---------------------------------------------------------------------
 // Links steht der Programmablaufplan (so SOLL das Programm laufen) und
 // die Verkabelung, rechts der Code mit Fehlern. Die Schüler:innen tippen
@@ -14,7 +14,7 @@
   var aufgaben = DATEN.fehlersuche;
   var gewuenscht = parseInt(adressParameter("aufgabe"), 10);
   var aufgabe = aufgaben.filter(function (a) { return a.id === gewuenscht; })[0] || aufgaben[0];
-  var speicherName = "fehlersuche_" + aufgabe.id;
+  var speicherName = "fehlersuche2_" + aufgabe.id;   // "2": Aufgaben wurden neu nummeriert
 
   // Fehler nach Zeilenindex (0-basiert)
   var fehlerBei = {};
@@ -40,8 +40,8 @@
     var link = document.createElement("a");
     link.href = "fehlersuche.html?aufgabe=" + a.id;
     link.className = "knopf rund" + (a.id === aufgabe.id ? " aktiv" : "");
-    link.setAttribute("aria-label", "Fehlersuche " + a.id + (Fortschritt.istGeloest("fehlersuche", a.id) ? " (gelöst)" : ""));
-    link.innerHTML = a.id + (Fortschritt.istGeloest("fehlersuche", a.id) ? '<span class="stern-klein">★</span>' : "");
+    link.setAttribute("aria-label", "Fehlersuche " + a.id + (Fortschritt.istGeloest("fehlersuche2", a.id) ? " (gelöst)" : ""));
+    link.innerHTML = a.id + (Fortschritt.istGeloest("fehlersuche2", a.id) ? '<span class="stern-klein">★</span>' : "");
     wahl.appendChild(link);
   });
 
@@ -96,7 +96,7 @@
 
     if (!fehlend && !daneben) {
       zusammenfassung.innerHTML = '<span class="zf zf-richtig">✔ Alle Fehler gefunden!</span>';
-      Fortschritt.setzeGeloest("fehlersuche", aufgabe.id);
+      Fortschritt.setzeGeloest("fehlersuche2", aufgabe.id);
       var stern = wahl.querySelector(".aktiv");
       if (stern && !stern.querySelector(".stern-klein")) stern.innerHTML += '<span class="stern-klein">★</span>';
       var naechste = aufgaben[aufgaben.indexOf(aufgabe) + 1];
@@ -104,6 +104,7 @@
       if (naechste) knoepfe.push({ text: "Nächste Aufgabe →", haupt: true, aktion: function () { location.href = "fehlersuche.html?aufgabe=" + naechste.id; } });
       knoepfe.push({ text: "Zur Übersicht", haupt: !naechste, aktion: function () { location.href = "index.html"; } });
       knoepfe.push({ text: "Hierbleiben" });
+      if (pruefeGlueckwunsch()) return;   // alle Sterne gesammelt: großer Glückwunsch
       zeigeDialog({ titel: "Super, alle Fehler gefunden!", html: '<p class="stern-gross" aria-hidden="true">★</p><p>Die Erklärungen stehen jetzt direkt an den Zeilen.</p>', knoepfe: knoepfe });
       return;
     }

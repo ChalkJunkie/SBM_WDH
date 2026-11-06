@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
   <title>Seifenblasenmaschine – Wiederholung</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06d">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06e">
 </head>
 <body class="seite-start">
   <header class="kopf">
@@ -18,13 +18,13 @@
 
   <main>
     <section class="bereich">
-      <h2>Level 1: Verkabeln</h2>
+      <h2>Bereich 1: Verkabeln</h2>
       <p>Stecke die Kabel so, wie ihr es im Unterricht gelernt habt. Tippe dazu erst auf einen Anschluss, dann auf den zweiten.</p>
       <ul class="aufgabenliste" id="liste1"></ul>
     </section>
 
     <section class="bereich">
-      <h2>Level 2: Programmieren</h2>
+      <h2>Bereich 2: Programmieren</h2>
       <h3>Teil A: Code und Kommentar zuordnen</h3>
       <p>Ordne jeder Codezeile den passenden Kommentar zu.</p>
       <ul class="aufgabenliste" id="liste2a"></ul>
@@ -42,10 +42,10 @@
   </main>
 
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06d"></script>
-  <script src="data/aufgaben.js?v=2026-11-06d"></script>
-  <script src="data/code.js?v=2026-11-06d"></script>
-  <script src="data/fehlersuche.js?v=2026-11-06d"></script>
+  <script src="js/gemeinsam.js?v=2026-11-06e"></script>
+  <script src="data/aufgaben.js?v=2026-11-06e"></script>
+  <script src="data/code.js?v=2026-11-06e"></script>
+  <script src="data/fehlersuche.js?v=2026-11-06e"></script>
   <script>
     // Liste der Verdrahtungsaufgaben mit Sternen
     (function () {
@@ -64,9 +64,11 @@
       }
       fuelle("liste1", DATEN.aufgaben, "verkabeln", "verkabeln.html?aufgabe=");
       fuelle("liste2a", DATEN.programme, "zuordnen", "zuordnen.html?programm=");
-      fuelle("liste2b", DATEN.fehlersuche, "fehlersuche", "fehlersuche.html?aufgabe=");
+      fuelle("liste2b", DATEN.fehlersuche, "fehlersuche2", "fehlersuche.html?aufgabe=");
       document.getElementById("version").textContent = "Version " + SPIEL_VERSION;
-      document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " Sterne";
+      document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " von " + Fortschritt.anzahlAufgaben() + " Sternen";
+      // Alles geschafft (z. B. schon vor einem Update)? Dann jetzt gratulieren.
+      pruefeGlueckwunsch();
 
       document.getElementById("zuruecksetzen").addEventListener("click", function () {
         zeigeDialog({

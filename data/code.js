@@ -1,5 +1,5 @@
 // =====================================================================
-// data/code.js – Level 2, Teil A: Code und Kommentar zuordnen
+// data/code.js – Bereich 2, Teil A: Code und Kommentar zuordnen
 // ---------------------------------------------------------------------
 // Jedes Programm:
 //   id         interner Name (in der Adresse: zuordnen.html?programm=servo)

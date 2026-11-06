@@ -1,5 +1,5 @@
 // =====================================================================
-// js/zuordnen.js – Level 2, Teil A: Code und Kommentar zuordnen
+// js/zuordnen.js – Bereich 2, Teil A: Code und Kommentar zuordnen
 // ---------------------------------------------------------------------
 // Bedienung: Zeile antippen, dann Kommentar antippen (oder umgekehrt).
 // Zusätzlich kann man einen Kommentar auf eine Zeile ziehen.
@@ -208,6 +208,7 @@
       if (naechstes) knoepfe.push({ text: "Nächstes Programm →", haupt: true, aktion: function () { location.href = "zuordnen.html?programm=" + naechstes.id; } });
       knoepfe.push({ text: "Zur Übersicht", haupt: !naechstes, aktion: function () { location.href = "index.html"; } });
       knoepfe.push({ text: "Hierbleiben" });
+      if (pruefeGlueckwunsch()) return;   // alle Sterne gesammelt: großer Glückwunsch
       zeigeDialog({ titel: "Super, alles richtig!", html: '<p class="stern-gross" aria-hidden="true">★</p><p>Alle Kommentare passen.</p>', knoepfe: knoepfe });
       return;
     }

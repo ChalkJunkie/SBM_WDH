@@ -1,5 +1,5 @@
 // =====================================================================
-// data/aufgaben.js – Level 1: Verdrahtungsaufgaben
+// data/aufgaben.js – Bereich 1: Verdrahtungsaufgaben
 // ---------------------------------------------------------------------
 // So liest du die Anschluss-Angaben:
 //   "servo.rot"        = genau dieser Anschluss (Bauteil.Pin, siehe pins.js)

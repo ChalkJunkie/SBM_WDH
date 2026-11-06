@@ -1,5 +1,5 @@
 // =====================================================================
-// data/hinweise.js – Alle Rückmeldungen beim Prüfen (Level 1)
+// data/hinweise.js – Alle Rückmeldungen beim Prüfen (Bereich 1)
 // ---------------------------------------------------------------------
 // text      Was die Schüler:innen lesen. Platzhalter:
 //             {ziel}  = Anschluss am anderen Kabelende, z. B. "Arduino – 5V"
