@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Vom Home-Bildschirm gestartet: ohne Safari-Leisten (wie eine App) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Seifenblasen">
+  <title>Verkabeln – Seifenblasenmaschine</title>
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06a">
+</head>
+<body class="seite-spiel">
+
+  <header class="kopf">
+    <a class="knopf" href="index.html">← Übersicht</a>
+    <h1 id="titel">Verkabeln</h1>
+    <nav class="aufgabenwahl" id="aufgabenwahl" aria-label="Aufgabe wählen"></nav>
+  </header>
+
+  <main class="spiel">
+    <section class="brett-bereich">
+      <div class="pin-anzeige" id="pinAnzeige" aria-live="polite">Tippe auf einen Anschluss.</div>
+      <svg id="brett" class="brett" role="img" aria-label="Schaltbrett"></svg>
+      <div class="zoom-knoepfe">
+        <button type="button" class="knopf rund" id="zoomPlus" aria-label="Vergrößern">+</button>
+        <button type="button" class="knopf rund" id="zoomMinus" aria-label="Verkleinern">−</button>
+        <button type="button" class="knopf rund klein-text" id="zoomAlles" aria-label="Ganzes Brett zeigen">Alles</button>
+        <button type="button" class="knopf rund" id="vollbild" aria-label="Vollbild ein/aus" hidden>⛶</button>
+      </div>
+    </section>
+
+    <aside class="seitenleiste">
+      <p class="auftrag nur-verkabeln" id="auftrag"></p>
+
+      <label class="schalter nur-verkabeln" id="selbstVerkabelnZeile" hidden>
+        <input type="checkbox" id="selbstVerkabeln"> Alles selbst verkabeln
+      </label>
+
+      <div class="farbwahl nur-verkabeln" id="farbwahl" role="radiogroup" aria-label="Kabelfarbe"></div>
+
+      <div class="knopfreihe nur-verkabeln">
+        <button type="button" class="knopf" id="rueckgaengig">↶ Rückgängig</button>
+        <button type="button" class="knopf" id="allesLoeschen">🗑 Alles löschen</button>
+      </div>
+
+      <button type="button" class="knopf haupt gross nur-verkabeln" id="fertig">✔ Ich bin fertig</button>
+
+      <button type="button" class="knopf nur-verkabeln" id="anordnenStart">✥ Bauteile anordnen</button>
+
+      <!-- Nur im Modus "Bauteile anordnen" sichtbar -->
+      <div class="anordnen-leiste nur-anordnen" id="anordnenLeiste">
+        <p class="auftrag">Ziehe ein Bauteil mit dem Finger an eine neue Stelle. Tippe ein Bauteil an und drücke „Drehen“, um es um 90° zu drehen. Die Kabel bleiben angeschlossen.</p>
+        <button type="button" class="knopf gross" id="drehen" disabled>↻ Drehen</button>
+        <button type="button" class="knopf" id="anordnungZurueck">↺ Anordnung zurücksetzen</button>
+        <button type="button" class="knopf haupt gross" id="anordnenFertig">✔ Fertig mit Anordnen</button>
+      </div>
+
+      <div id="rueckmeldung" class="rueckmeldung nur-verkabeln" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <!-- Reihenfolge wichtig: erst DATEN anlegen, dann Datendateien, dann Programm -->
+  <script>window.DATEN = {};</script>
+  <script src="js/gemeinsam.js?v=2026-11-06a"></script>
+  <script src="data/pins.js?v=2026-11-06a"></script>
+  <script src="data/schaltbrett.js?v=2026-11-06a"></script>
+  <script src="data/dokumente.js?v=2026-11-06a"></script>
+  <script src="data/hinweise.js?v=2026-11-06a"></script>
+  <script src="data/aufgaben.js?v=2026-11-06a"></script>
+  <script src="js/zoom.js?v=2026-11-06a"></script>
+  <script src="js/kabelweg.js?v=2026-11-06a"></script>
+  <script src="js/schaltbrett.js?v=2026-11-06a"></script>
+  <script src="js/pruefung.js?v=2026-11-06a"></script>
+  <script src="js/verkabeln.js?v=2026-11-06a"></script>
+</body>
+</html>

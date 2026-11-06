@@ -1,0 +1,429 @@
+// =====================================================================
+// js/verkabeln.js – Ablauf von Level 1 (Verdrahtungsaufgaben)
+// =====================================================================
+(function () {
+
+  // ---------- Welche Aufgabe? ----------
+  var aufgaben = DATEN.aufgaben;
+  var gewuenscht = parseInt(adressParameter("aufgabe"), 10);
+  var aufgabe = aufgaben.filter(function (a) { return a.id === gewuenscht; })[0] || aufgaben[0];
+  var speicherName = "verkabeln_" + aufgabe.id;
+
+  // ---------- Kabelfarben ----------
+  var FARBEN = [
+    { name: "rot",     wert: "#d32020" },
+    { name: "schwarz", wert: "#1e1e1e" },
+    { name: "orange",  wert: "#f08a1c" },
+    { name: "gelb",    wert: "#f2c200" },
+    { name: "grün",    wert: "#2e9d4a" },
+    { name: "blau",    wert: "#1f63d6" },
+    { name: "lila",    wert: "#8e3fc4" },
+    { name: "weiß",    wert: "#f4f4f4" }
+  ];
+  var WECHSELFARBEN = ["#1f63d6", "#2e9d4a", "#8e3fc4", "#f2c200", "#f08a1c"];
+  var gewaehlteFarbe = "auto";
+  var wechselZaehler = 0;
+
+  // Farbe automatisch wählen: Bauteilkabel behalten ihre Farbe,
+  // GND wird schwarz, Plus wird rot, sonst wechselnde Farben.
+  function autoFarbe(a, b) {
+    var pa = Pins.daten(a), pb = Pins.daten(b);
+    if (pa && pa.farbe) return pa.farbe;
+    if (pb && pb.farbe) return pb.farbe;
+    var istGnd = function (s, p) { return (p && p.art === "gnd") || s === "treiber.GND"; };
+    var istPlus = function (s, p) {
+      return (p && (p.art === "plus" || p.art === "buchse")) || s === "batterie.stecker" ||
+        s === "treiber.P12V" || s === "treiber.P5V";
+    };
+    if (istGnd(a, pa) || istGnd(b, pb)) return "#1e1e1e";
+    if (istPlus(a, pa) || istPlus(b, pb)) return "#d32020";
+    return WECHSELFARBEN[(wechselZaehler++) % WECHSELFARBEN.length];
+  }
+
+  // ---------- Zustand ----------
+  var gespeichert = Speicher.lesen(speicherName, null) || {};
+  var selbst = !!gespeichert.selbst;          // "Alles selbst verkabeln"
+  var kabel = gespeichert.kabel || [];        // eigene Kabel
+  var verlauf = [];                           // für "Rückgängig"
+  var naechsteId = 1;
+  kabel.forEach(function (k) {
+    var n = parseInt(String(k.id).replace(/\D/g, ""), 10);
+    if (n >= naechsteId) naechsteId = n + 1;
+  });
+
+  // Vorgegebene (gesperrte) Kabel aus der vorherigen Aufgabe
+  function vorgegebeneKabel() {
+    if (selbst) return [];
+    return (aufgabe.vorverkabelt || []).map(function (paar, i) {
+      return { id: "v" + i, a: paar[0], b: paar[1], farbe: autoFarbeFest(paar[0], paar[1]), gesperrt: true };
+    });
+  }
+  function autoFarbeFest(a, b) { var z = wechselZaehler; var f = autoFarbe(a, b); wechselZaehler = z; return f; }
+
+  function alleKabel() { return vorgegebeneKabel().concat(kabel); }
+
+  function speichern() {
+    Speicher.schreiben(speicherName, { kabel: kabel, selbst: selbst });
+  }
+
+  // ---------- Seite aufbauen ----------
+  if (DATEN.kalibrierTest) {
+    var hinweis = document.createElement("div");
+    hinweis.className = "datenfehler";
+    hinweis.textContent = "Testmodus: Dieses Gerät benutzt die Pin-Werte aus dem Kalibriermodus, nicht aus data/pins.js.";
+    document.body.insertBefore(hinweis, document.body.firstChild);
+  }
+  document.getElementById("titel").textContent = "Aufgabe " + aufgabe.id + ": " + aufgabe.titel;
+  document.title = "Aufgabe " + aufgabe.id + " – Verkabeln";
+  // Auftragstext: bei "Alles selbst verkabeln" ggf. ein eigener Text
+  function zeigeAuftrag() {
+    document.getElementById("auftrag").textContent =
+      (selbst && aufgabe.auftragSelbst) ? aufgabe.auftragSelbst : aufgabe.auftrag;
+  }
+  zeigeAuftrag();
+
+  var wahl = document.getElementById("aufgabenwahl");
+  aufgaben.forEach(function (a) {
+    var link = document.createElement("a");
+    link.href = "verkabeln.html?aufgabe=" + a.id;
+    link.className = "knopf rund" + (a.id === aufgabe.id ? " aktiv" : "");
+    link.setAttribute("aria-label", "Aufgabe " + a.id + (Fortschritt.istGeloest("verkabeln", a.id) ? " (gelöst)" : ""));
+    link.innerHTML = a.id + (Fortschritt.istGeloest("verkabeln", a.id) ? '<span class="stern-klein">★</span>' : "");
+    wahl.appendChild(link);
+  });
+
+  // "Alles selbst verkabeln" nur zeigen, wenn es Vorgaben gibt
+  if ((aufgabe.vorverkabelt || []).length) {
+    var zeile = document.getElementById("selbstVerkabelnZeile");
+    var box = document.getElementById("selbstVerkabeln");
+    zeile.hidden = false;
+    box.checked = selbst;
+    box.addEventListener("change", function () {
+      selbst = box.checked;
+      zeigeAuftrag();
+      kabel = []; verlauf = [];
+      speichern(); geaendert();
+    });
+  }
+
+  // Farbwahl
+  var farbwahl = document.getElementById("farbwahl");
+  function farbknopf(wert, beschriftung, stil) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "farbe" + (wert === gewaehlteFarbe ? " aktiv" : "");
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", wert === gewaehlteFarbe ? "true" : "false");
+    b.setAttribute("aria-label", "Kabelfarbe " + beschriftung);
+    b.innerHTML = stil;
+    b.addEventListener("click", function () {
+      gewaehlteFarbe = wert;
+      Array.prototype.forEach.call(farbwahl.children, function (c) {
+        c.classList.remove("aktiv"); c.setAttribute("aria-checked", "false");
+      });
+      b.classList.add("aktiv"); b.setAttribute("aria-checked", "true");
+    });
+    farbwahl.appendChild(b);
+  }
+  farbknopf("auto", "automatisch", '<span class="farbe-auto">Auto</span>');
+  FARBEN.forEach(function (f) {
+    farbknopf(f.wert, f.name, '<span class="farbe-punkt" style="background:' + f.wert + '"></span>');
+  });
+
+  // ---------- Schaltbrett ----------
+  var anzeige = document.getElementById("pinAnzeige");
+  var auswahl = null;
+
+  var brett = new Schaltbrett(document.getElementById("brett"), {
+    bauteile: aufgabe.bauteile,
+    beimPin: beimPin,
+    beimKabel: beimKabel,
+    beimBauteilWahl: function (n) {
+      document.getElementById("drehen").disabled = !n;
+      zeigeAnzeige(n ? "<strong>" + esc(DATEN.pins[n].name) + "</strong> ausgewählt.<small>Ziehen zum Verschieben, „Drehen“ zum Drehen.</small>"
+                     : "Tippe ein Bauteil an oder ziehe es an eine neue Stelle.", !!n);
+    },
+    beimAnordnen: function (n, ergebnis) {
+      document.getElementById("drehen").disabled = false;
+      zeigeAnzeige(ergebnis === "kein_platz"
+        ? "Dort ist kein Platz: Bauteile brauchen etwas Abstand zueinander, damit die Kabel durchpassen."
+        : "<strong>" + esc(DATEN.pins[n].name) + "</strong> verschoben.", ergebnis !== "kein_platz");
+    },
+    beimLeeren: function () { waehleAb(); zeigeAnzeige("Tippe auf einen Anschluss."); }
+  });
+  brett.setzeKabel(alleKabel());
+
+  document.getElementById("zoomPlus").addEventListener("click", function () { brett.zoom.zoomen(1.4); });
+  document.getElementById("zoomMinus").addEventListener("click", function () { brett.zoom.zoomen(1 / 1.4); });
+  richteVollbildEin(document.getElementById("vollbild"));
+  document.getElementById("zoomAlles").addEventListener("click", function () { brett.zoom.allesZeigen(); });
+
+  // ---------- Modus "Bauteile anordnen" ----------
+  function anordnenUmschalten(an) {
+    waehleAb();
+    document.body.classList.toggle("modus-anordnen", an);
+    brett.setzeAnordnen(an);
+    document.getElementById("drehen").disabled = true;
+    if (an) {
+      zeigeAnzeige("Tippe ein Bauteil an oder ziehe es an eine neue Stelle.");
+    } else {
+      zeigeAnzeige("Tippe auf einen Anschluss.");
+      brett.zoom.allesZeigen();   // ganzes Brett zeigen (Bauteile können jetzt woanders liegen)
+      geaendert();
+    }
+  }
+  document.getElementById("anordnenStart").addEventListener("click", function () { anordnenUmschalten(true); });
+  document.getElementById("anordnenFertig").addEventListener("click", function () { anordnenUmschalten(false); });
+  document.getElementById("drehen").addEventListener("click", function () {
+    var e = brett.dreheGewaehltes();
+    zeigeAnzeige(e === "kein_platz" ? "Zum Drehen ist dort nicht genug Platz. Schiebe das Bauteil erst etwas zur Seite."
+               : e === "keins" ? "Tippe zuerst ein Bauteil an." : "Gedreht.");
+  });
+  document.getElementById("anordnungZurueck").addEventListener("click", function () {
+    zeigeDialog({
+      titel: "Anordnung zurücksetzen?",
+      html: "<p>Alle Bauteile kommen wieder an ihren ursprünglichen Platz. Die Kabel bleiben gesteckt.</p>",
+      knoepfe: [
+        { text: "↺ Zurücksetzen", haupt: true, aktion: function () { brett.anordnungZuruecksetzen(); zeigeAnzeige("Anordnung zurückgesetzt."); } },
+        { text: "Abbrechen" }
+      ]
+    });
+  });
+
+  function zeigeAnzeige(html, gross) {
+    anzeige.innerHTML = html;
+    anzeige.classList.toggle("gross", !!gross);
+  }
+
+  function waehleAb() {
+    auswahl = null;
+    brett.setzeAuswahl(null);
+  }
+
+  // Antippen in der Nähe von Anschlüssen
+  function beimPin(nahe, typ, kabelId) {
+    // Eindeutig? Dann direkt nehmen, sonst die Lupe öffnen.
+    var eindeutig = nahe.length === 1 ||
+      (typ !== "touch" && nahe[1].abstand > 2 * nahe[0].abstand) ||
+      (nahe[0].abstand < 6 && nahe[1].abstand > 18);
+    if (eindeutig && !kabelId) { waehlePin(nahe[0].schluessel); return; }
+    oeffneLupe(nahe.slice(0, 8), kabelId);
+  }
+
+  // Lupe: die Anschlüsse in der Nähe als große Knöpfe
+  function oeffneLupe(kandidaten, kabelId) {
+    kandidaten.sort(function (a, b) { return (a.x - b.x) || (a.y - b.y); });
+    var knoepfe = kandidaten.map(function (k) {
+      var p = Pins.daten(k.schluessel), b = DATEN.pins[Pins.bauteil(k.schluessel)];
+      return {
+        text: '<span class="lupe-name">' + esc(p.name) + '</span><span class="lupe-bauteil">' + esc(b.name) + "</span>",
+        klasse: "lupe-knopf" + (p.belegbar === false ? " nicht-belegbar" : ""),
+        aktion: function () { waehlePin(k.schluessel); }
+      };
+    });
+    // Liegt dort auch ein Kabel, kann man es von hier aus löschen
+    if (kabelId) knoepfe.push({
+      text: "✂ Kabel an dieser Stelle …", klasse: "lupe-abbrechen",
+      aktion: function () { setTimeout(function () { beimKabel(kabelId); }, 0); }
+    });
+    knoepfe.push({ text: "Abbrechen", klasse: "lupe-abbrechen" });
+    var d = zeigeDialog({ titel: "Welchen Anschluss meinst du?", html: "", knoepfe: knoepfe });
+    d.querySelector(".dialog").classList.add("lupe");
+  }
+
+  function waehlePin(s) {
+    var name = esc(Pins.langerName(s));
+    if (!Pins.istBelegbar(s)) {
+      zeigeAnzeige("<strong>" + name + "</strong> wird nicht verwendet.", true);
+      return;
+    }
+    if (!auswahl) {
+      auswahl = s;
+      brett.setzeAuswahl(s);
+      zeigeAnzeige("<strong>" + name + "</strong><small>Tippe jetzt auf das andere Ende des Kabels.</small>", true);
+      return;
+    }
+    if (auswahl === s) {
+      waehleAb();
+      zeigeAnzeige("Auswahl aufgehoben.");
+      return;
+    }
+    var a = auswahl;
+    waehleAb();
+    var schonDa = alleKabel().some(function (k) { return (k.a === a && k.b === s) || (k.a === s && k.b === a); });
+    if (schonDa) {
+      zeigeAnzeige("Dieses Kabel gibt es schon.");
+      return;
+    }
+    merkeFuerRueckgaengig();
+    var farbe = gewaehlteFarbe === "auto" ? autoFarbe(a, s) : gewaehlteFarbe;
+    kabel.push({ id: "k" + (naechsteId++), a: a, b: s, farbe: farbe });
+    speichern();
+    geaendert();
+    zeigeAnzeige("Kabel gesteckt: <strong>" + esc(Pins.langerName(a)) + "</strong> ↔ <strong>" + name + "</strong>");
+  }
+
+  // Antippen von Kabeln: liegen mehrere fast gleich nah, nachfragen
+  function beimKabel(liste, typ) {
+    if (typeof liste === "string") { kabelGewaehlt(liste); return; }
+    var eindeutig = liste.length === 1 || liste[1].abstand - liste[0].abstand > 5;
+    if (eindeutig) { kabelGewaehlt(liste[0].id); return; }
+    var alle = alleKabel();
+    var knoepfe = liste.slice(0, 5).map(function (t) {
+      var k = alle.filter(function (x) { return x.id === t.id; })[0];
+      return {
+        text: '<span class="farbe-punkt" style="background:' + (k.gesperrt ? "#ccc" : k.farbe) + '"></span>' +
+          '<span class="kabel-wahl">' + esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b)) + "</span>",
+        klasse: "lupe-knopf kabel-knopf",
+        aktion: function () { setTimeout(function () { kabelGewaehlt(t.id); }, 0); }
+      };
+    });
+    knoepfe.push({ text: "Abbrechen", klasse: "lupe-abbrechen" });
+    var d = zeigeDialog({ titel: "Welches Kabel meinst du?", html: "", knoepfe: knoepfe });
+    d.querySelector(".dialog").classList.add("lupe");
+  }
+
+  function kabelGewaehlt(id) {
+    var k = alleKabel().filter(function (x) { return x.id === id; })[0];
+    if (!k) return;
+    waehleAb();
+    if (k.gesperrt) {
+      zeigeAnzeige("Dieses Kabel ist vorgegeben. Wenn du alles selbst stecken willst, wähle „Alles selbst verkabeln“.");
+      return;
+    }
+    zeigeDialog({
+      titel: "Kabel löschen?",
+      html: "<p>" + esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b)) + "</p>",
+      knoepfe: [
+        { text: "🗑 Löschen", haupt: true, aktion: function () {
+          merkeFuerRueckgaengig();
+          kabel = kabel.filter(function (x) { return x.id !== id; });
+          speichern(); geaendert();
+          zeigeAnzeige("Kabel gelöscht.");
+        } },
+        { text: "Abbrechen" }
+      ]
+    });
+  }
+
+  // ---------- Rückgängig / Alles löschen ----------
+  function merkeFuerRueckgaengig() {
+    verlauf.push(JSON.stringify(kabel));
+    if (verlauf.length > 50) verlauf.shift();
+  }
+
+  document.getElementById("rueckgaengig").addEventListener("click", function () {
+    if (!verlauf.length) { zeigeAnzeige("Es gibt nichts rückgängig zu machen."); return; }
+    kabel = JSON.parse(verlauf.pop());
+    waehleAb(); speichern(); geaendert();
+    zeigeAnzeige("Rückgängig gemacht.");
+  });
+
+  document.getElementById("allesLoeschen").addEventListener("click", function () {
+    if (!kabel.length) { zeigeAnzeige("Es gibt noch keine eigenen Kabel."); return; }
+    zeigeDialog({
+      titel: "Alle eigenen Kabel löschen?",
+      html: "<p>Vorgegebene (helle) Kabel bleiben stecken.</p>",
+      knoepfe: [
+        { text: "🗑 Alles löschen", haupt: true, aktion: function () {
+          merkeFuerRueckgaengig();
+          kabel = [];
+          waehleAb(); speichern(); geaendert();
+          zeigeAnzeige("Alle eigenen Kabel gelöscht.");
+        } },
+        { text: "Abbrechen" }
+      ]
+    });
+  });
+
+  // Nach jeder Änderung: Zeichnung erneuern, alte Rückmeldung als veraltet zeigen
+  var rueckmeldung = document.getElementById("rueckmeldung");
+  function geaendert() {
+    brett.setzeMarkierungen(null);
+    brett.setzeKabel(alleKabel());
+    if (rueckmeldung.innerHTML) {
+      rueckmeldung.innerHTML = '<p class="hinweis-veraltet">Du hast etwas geändert. Drücke wieder „Ich bin fertig“, wenn du so weit bist.</p>';
+    }
+  }
+
+  // ---------- Prüfen ----------
+  var SYMBOL = {
+    fehler: { zeichen: "✖", wort: "Fehler" },
+    fehlt:  { zeichen: "＋", wort: "Fehlt noch" },
+    info:   { zeichen: "ℹ", wort: "Hinweis" }
+  };
+
+  document.getElementById("fertig").addEventListener("click", function () {
+    waehleAb();
+    // Noch gar nichts gesteckt? Dann nicht die ganze Lösung als Liste verraten.
+    if (!kabel.length) {
+      brett.setzeMarkierungen(null);
+      rueckmeldung.innerHTML = '<div class="meldung meldung-info"><span class="meldung-symbol" aria-hidden="true">ℹ</span>' +
+        "<div><strong>Hinweis:</strong> Du hast noch kein eigenes Kabel gesteckt. Tippe auf einen Anschluss und dann auf den zweiten.</div></div>";
+      return;
+    }
+    var ergebnis = Pruefung.pruefe(aufgabe, alleKabel());
+    var marken = { kabel: {}, pins: {} };
+    ergebnis.meldungen.forEach(function (m, i) {
+      m.kabel.forEach(function (id) { if (!marken.kabel[id]) marken.kabel[id] = i + 1; });
+      m.pins.forEach(function (s) { if (!marken.pins[s]) marken.pins[s] = i + 1; });
+    });
+    brett.setzeMarkierungen(marken);
+    zeigeErgebnis(ergebnis);
+  });
+
+  function zeigeErgebnis(ergebnis) {
+    if (ergebnis.geloest) {
+      Fortschritt.setzeGeloest("verkabeln", aufgabe.id);
+      rueckmeldung.innerHTML = '<div class="meldung meldung-richtig"><span class="meldung-symbol">✔</span>' +
+        "<div><strong>Alles richtig!</strong> Du hast einen Stern bekommen.</div></div>";
+      var stern = wahl.querySelector(".aktiv");
+      if (stern && !stern.querySelector(".stern-klein")) stern.innerHTML += '<span class="stern-klein">★</span>';
+      var naechste = aufgaben[aufgaben.indexOf(aufgabe) + 1];
+      var knoepfe = [];
+      if (naechste) knoepfe.push({ text: "Nächste Aufgabe →", haupt: true, aktion: function () {
+        window.location.href = "verkabeln.html?aufgabe=" + naechste.id;
+      } });
+      knoepfe.push({ text: "Zur Übersicht", haupt: !naechste, aktion: function () { window.location.href = "index.html"; } });
+      knoepfe.push({ text: "Hierbleiben" });
+      zeigeDialog({
+        titel: "Super, alles richtig!",
+        html: '<p class="stern-gross" aria-hidden="true">★</p><p>Aufgabe ' + aufgabe.id + " ist gelöst.</p>",
+        knoepfe: knoepfe
+      });
+      return;
+    }
+    var n = ergebnis.meldungen.length;
+    var html = '<h2 class="rueckmeldung-titel">' + (n === 1 ? "1 Sache stimmt noch nicht:" : n + " Sachen stimmen noch nicht:") + "</h2><ol class=\"meldungen\">";
+    ergebnis.meldungen.forEach(function (m, i) {
+      var s = SYMBOL[m.art];
+      html += '<li><button type="button" class="meldung meldung-' + m.art + '" data-nr="' + i + '">' +
+        '<span class="meldung-nr">' + (i + 1) + "</span>" +
+        '<span class="meldung-symbol" aria-hidden="true">' + s.zeichen + "</span>" +
+        '<span class="meldung-text"><span class="meldung-art">' + s.wort + ":</span> " + esc(m.text) +
+        (m.dokument ? '<span class="meldung-dokument">📖 Schau nach: ' + esc(dokumentText(m.dokument)) + "</span>" : "") +
+        "</span></button></li>";
+    });
+    html += "</ol><p class=\"klein\">Tippe auf eine Meldung, um die Stelle auf dem Brett zu sehen.</p>";
+    rueckmeldung.innerHTML = html;
+
+    Array.prototype.forEach.call(rueckmeldung.querySelectorAll(".meldung[data-nr]"), function (knopf) {
+      knopf.addEventListener("click", function () {
+        var m = ergebnis.meldungen[parseInt(knopf.getAttribute("data-nr"), 10)];
+        var punkte = [];
+        var alle = alleKabel();
+        m.kabel.forEach(function (id) {
+          var k = alle.filter(function (x) { return x.id === id; })[0];
+          if (k) { punkte.push(brett.pinPosition(k.a)); punkte.push(brett.pinPosition(k.b)); }
+        });
+        m.pins.forEach(function (s) { punkte.push(brett.pinPosition(s)); });
+        brett.zeigeStellen(punkte);
+      });
+    });
+  }
+
+  // Beim Drehen des iPads Ansicht anpassen
+  window.addEventListener("orientationchange", function () {
+    setTimeout(function () { brett.zoom.allesZeigen(); }, 300);
+  });
+})();

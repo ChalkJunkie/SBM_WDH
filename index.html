@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Vom Home-Bildschirm gestartet: ohne Safari-Leisten (wie eine App) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Seifenblasen">
+  <title>Seifenblasenmaschine – Wiederholung</title>
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-06a">
+</head>
+<body class="seite-start">
+  <header class="kopf">
+    <h1>Arduino-Seifenblasenmaschine – Wiederholung</h1>
+    <p class="sternzahl" id="sternzahl"></p>
+  </header>
+
+  <main>
+    <section class="bereich">
+      <h2>Level 1: Verkabeln</h2>
+      <p>Stecke die Kabel so, wie ihr es im Unterricht gelernt habt. Tippe dazu erst auf einen Anschluss, dann auf den zweiten.</p>
+      <ul class="aufgabenliste" id="liste1"></ul>
+    </section>
+
+    <section class="bereich">
+      <h2>Level 2: Programmieren</h2>
+      <p class="klein">Kommt bald.</p>
+    </section>
+
+    <section class="bereich">
+      <h2>Fortschritt</h2>
+      <p class="klein">Dein Fortschritt wird nur auf diesem Gerät gespeichert.</p>
+      <button type="button" class="knopf" id="zuruecksetzen">↺ Fortschritt zurücksetzen</button>
+      <p class="klein" id="version"></p>
+    </section>
+  </main>
+
+  <script>window.DATEN = {};</script>
+  <script src="js/gemeinsam.js?v=2026-11-06a"></script>
+  <script src="data/aufgaben.js?v=2026-11-06a"></script>
+  <script>
+    // Liste der Verdrahtungsaufgaben mit Sternen
+    (function () {
+      var liste = document.getElementById("liste1");
+      DATEN.aufgaben.forEach(function (a) {
+        var geloest = Fortschritt.istGeloest("verkabeln", a.id);
+        var li = document.createElement("li");
+        li.innerHTML = '<a class="knopf aufgabe-link" href="verkabeln.html?aufgabe=' + a.id + '">' +
+          '<span class="nr">' + a.id + "</span><span>" + esc(a.titel) + "</span>" +
+          '<span class="stern' + (geloest ? "" : " leer") + '" aria-label="' + (geloest ? "gelöst" : "noch nicht gelöst") + '">' +
+          (geloest ? "★" : "☆") + "</span></a>";
+        liste.appendChild(li);
+      });
+      document.getElementById("version").textContent = "Version " + SPIEL_VERSION;
+      document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " Sterne";
+
+      document.getElementById("zuruecksetzen").addEventListener("click", function () {
+        zeigeDialog({
+          titel: "Fortschritt zurücksetzen?",
+          html: "<p>Alle Sterne und alle gesteckten Kabel werden gelöscht.</p>",
+          knoepfe: [
+            { text: "↺ Zurücksetzen", haupt: true, aktion: function () { Speicher.allesLoeschen(); window.location.reload(); } },
+            { text: "Abbrechen" }
+          ]
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

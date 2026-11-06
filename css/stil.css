@@ -1,0 +1,230 @@
+/* =====================================================================
+   css/stil.css – Aussehen aller Seiten
+   Farben stehen oben als Variablen, damit man sie leicht ändern kann.
+   ===================================================================== */
+:root {
+  --hintergrund: #f4f1ea;
+  --flaeche: #ffffff;
+  --text: #1b1b1b;
+  --text-leise: #555;
+  --rand: #c9c3b6;
+  --akzent: #0b5cad;        /* Hauptknöpfe */
+  --akzent-text: #ffffff;
+  --richtig: #1d6b2f;       /* immer zusammen mit ✔ */
+  --richtig-hell: #e2f3e5;
+  --fehler: #a61b1b;        /* immer zusammen mit ✖ */
+  --fehler-hell: #fbe4e4;
+  --fehlt: #7a4a00;         /* immer zusammen mit ＋ */
+  --fehlt-hell: #fff1d6;
+  --info: #0b4f8a;          /* immer zusammen mit ℹ */
+  --info-hell: #e1eefa;
+  --brett: #e9efe6;
+  --stern: #e0a100;
+  --tippflaeche: 48px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--hintergrund);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1 { font-size: 1.35rem; margin: 0; }
+h2 { font-size: 1.2rem; margin: 0 0 .5rem; }
+.klein { font-size: .9rem; color: var(--text-leise); }
+[hidden] { display: none !important; }
+
+/* ---------- Knöpfe ---------- */
+.knopf {
+  display: inline-flex; align-items: center; justify-content: center; gap: .4em;
+  min-height: var(--tippflaeche); min-width: var(--tippflaeche);
+  padding: .5em .9em;
+  border: 2px solid var(--rand); border-radius: 12px;
+  background: var(--flaeche); color: var(--text);
+  font: inherit; font-weight: 600; text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none;
+}
+.knopf:active { transform: translateY(1px); filter: brightness(.95); }
+.knopf:focus-visible, .farbe:focus-visible, .meldung:focus-visible { outline: 3px solid var(--akzent); outline-offset: 2px; }
+.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+.knopf.gross { width: 100%; font-size: 1.15rem; min-height: 56px; }
+.knopf.rund { border-radius: 50%; padding: 0; width: var(--tippflaeche); font-size: 1.3rem; position: relative; }
+.knopf.aktiv { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+.knopfreihe { display: flex; gap: .5rem; flex-wrap: wrap; }
+.knopfreihe .knopf { flex: 1 1 auto; }
+.stern-klein { position: absolute; top: -8px; right: -6px; color: var(--stern); font-size: 1rem; text-shadow: 0 0 2px #fff, 0 0 2px #fff; }
+
+/* ---------- Kopfzeile ---------- */
+.kopf {
+  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+  padding: .5rem max(.75rem, env(safe-area-inset-right)) .5rem max(.75rem, env(safe-area-inset-left));
+  background: var(--flaeche); border-bottom: 2px solid var(--rand);
+}
+.kopf h1 { flex: 1 1 12rem; }
+.aufgabenwahl { display: flex; gap: .4rem; }
+
+/* ---------- Spielseite (Level 1) ---------- */
+.seite-spiel { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.spiel { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr minmax(300px, 380px); }
+
+.brett-bereich { position: relative; min-height: 0; min-width: 0; background: var(--brett); }
+.brett {
+  display: block; width: 100%; height: 100%;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.pin-anzeige {
+  position: absolute; top: .5rem; left: .5rem; right: .5rem; z-index: 2;
+  background: rgba(255, 255, 255, .95); border: 2px solid var(--rand); border-radius: 12px;
+  padding: .4rem .8rem; min-height: var(--tippflaeche);
+  pointer-events: none;
+}
+.pin-anzeige.gross strong { font-size: 1.4rem; }
+.pin-anzeige small { display: block; font-size: .95rem; color: var(--text-leise); }
+.zoom-knoepfe { position: absolute; right: .6rem; bottom: .6rem; display: flex; flex-direction: column; gap: .5rem; z-index: 2; }
+
+.seitenleiste {
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: .9rem; display: flex; flex-direction: column; gap: .9rem;
+  background: var(--flaeche); border-left: 2px solid var(--rand);
+}
+.auftrag { margin: 0; font-size: 1.05rem; }
+.schalter { display: flex; align-items: center; gap: .6rem; min-height: var(--tippflaeche); font-weight: 600; }
+.schalter input { width: 28px; height: 28px; }
+
+/* Hochformat: Brett oben, Bedienung unten */
+@media (orientation: portrait) {
+  .spiel { grid-template-columns: 1fr; grid-template-rows: minmax(0, 58%) minmax(0, 42%); }
+  .seitenleiste { border-left: none; border-top: 2px solid var(--rand); }
+}
+
+/* ---------- Farbwahl ---------- */
+.farbwahl { display: flex; flex-wrap: wrap; gap: .35rem; }
+.farbe {
+  min-width: var(--tippflaeche); height: var(--tippflaeche);
+  border: 2px solid var(--rand); border-radius: 10px; background: var(--flaeche);
+  display: inline-flex; align-items: center; justify-content: center; padding: 0 .3rem;
+  font: inherit; font-size: .9rem; font-weight: 600; touch-action: manipulation; cursor: pointer;
+}
+.farbe.aktiv { border: 4px solid var(--akzent); }
+.farbe-punkt { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #555; display: block; }
+
+/* ---------- Schaltbrett-Grafik ---------- */
+.pin-ring { fill: none; stroke: #ffd400; stroke-width: 2; opacity: .75; pointer-events: none; }
+.kabel-rand { fill: none; stroke: rgba(0, 0, 0, .55); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.kabel-farbe { fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.kabel-stecker { stroke: rgba(0, 0, 0, .6); stroke-width: 2; pointer-events: none; }
+.kabel-treffer { fill: none; stroke: transparent; stroke-width: 20; stroke-linecap: round; pointer-events: stroke; }
+.kabel.gesperrt .kabel-farbe { opacity: 1; }
+.kabel.gesperrt .kabel-rand { stroke: rgba(0, 0, 0, .28); }
+.kabel.gesperrt .kabel-stecker { stroke: rgba(0, 0, 0, .3); }
+.kabel-falsch-muster { fill: none; stroke: #fff; stroke-width: 2.5; stroke-dasharray: 8 8; pointer-events: none; }
+.marke { pointer-events: none; }
+.marke circle { stroke: #fff; stroke-width: 3; }
+.marke text { font: bold 18px sans-serif; fill: #fff; }
+.marke-falsch circle { fill: var(--fehler); }
+.marke-fehlt circle { fill: var(--fehlt); }
+.pin-fehlt-ring { fill: none; stroke: var(--fehlt); stroke-width: 4; stroke-dasharray: 5 4; pointer-events: none; }
+.pin-auswahl { fill: rgba(11, 92, 173, .25); stroke: var(--akzent); stroke-width: 4; pointer-events: none; animation: pulsieren 1s ease-in-out infinite alternate; }
+.blinken { fill: none; stroke: #ff00aa; stroke-width: 6; pointer-events: none; animation: blinken .4s ease-in-out 4 alternate; }
+@keyframes pulsieren { from { stroke-width: 3; } to { stroke-width: 7; } }
+@keyframes blinken { from { opacity: 1; } to { opacity: .1; } }
+@media (prefers-reduced-motion: reduce) { .pin-auswahl, .blinken { animation: none; } }
+
+/* ---------- Rückmeldungen ---------- */
+.rueckmeldung-titel { font-size: 1.1rem; }
+.meldungen { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.meldung {
+  display: flex; align-items: flex-start; gap: .5rem; width: 100%; text-align: left;
+  padding: .6rem .7rem; border-radius: 12px; border: 2px solid; font: inherit; color: var(--text);
+  min-height: var(--tippflaeche); touch-action: manipulation; cursor: pointer;
+}
+.meldung-nr {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 700;
+}
+.meldung-symbol { flex: 0 0 auto; font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+.meldung-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.meldung-art { font-weight: 700; }
+.meldung-dokument { display: block; overflow-wrap: anywhere; margin-top: .3rem; font-size: .92rem; color: var(--text-leise); }
+.meldung-fehler { background: var(--fehler-hell); border-color: var(--fehler); }
+.meldung-fehler .meldung-nr { background: var(--fehler); }
+.meldung-fehler .meldung-symbol, .meldung-fehler .meldung-art { color: var(--fehler); }
+.meldung-fehlt { background: var(--fehlt-hell); border-color: var(--fehlt); }
+.meldung-fehlt .meldung-nr { background: var(--fehlt); }
+.meldung-fehlt .meldung-symbol, .meldung-fehlt .meldung-art { color: var(--fehlt); }
+.meldung-info { background: var(--info-hell); border-color: var(--info); }
+.meldung-info .meldung-nr { background: var(--info); }
+.meldung-info .meldung-symbol, .meldung-info .meldung-art { color: var(--info); }
+.meldung-richtig { background: var(--richtig-hell); border-color: var(--richtig); cursor: default; }
+.meldung-richtig .meldung-symbol { color: var(--richtig); }
+.hinweis-veraltet { margin: 0; padding: .6rem; border-radius: 10px; background: #eee; color: var(--text-leise); }
+
+/* ---------- Dialog / Lupe ---------- */
+.dialog-hintergrund {
+  position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.dialog {
+  background: var(--flaeche); border-radius: 16px; padding: 1.1rem; width: min(560px, 100%);
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+}
+.dialog-inhalt p { margin: .3rem 0 .8rem; }
+.dialog-knoepfe { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; }
+.lupe .dialog-knoepfe { justify-content: stretch; }
+.lupe-knopf { flex: 1 1 110px; flex-direction: column; gap: 0; min-height: 76px; }
+.lupe-name { font-size: 1.5rem; }
+.lupe-bauteil { font-size: .8rem; font-weight: 400; color: var(--text-leise); }
+.lupe-knopf.nicht-belegbar { opacity: .55; border-style: dashed; }
+.lupe-abbrechen { flex: 1 1 100%; }
+.stern-gross { font-size: 4rem; color: var(--stern); text-align: center; margin: 0; line-height: 1; }
+
+/* ---------- Fehlermeldung bei kaputten Datendateien ---------- */
+.datenfehler { background: var(--fehler); color: #fff; padding: .7rem 1rem; font-weight: 700; }
+
+/* ---------- Startseite ---------- */
+.seite-start main { max-width: 900px; margin: 0 auto; padding: 1rem; }
+.bereich { background: var(--flaeche); border: 2px solid var(--rand); border-radius: 16px; padding: 1rem; margin-bottom: 1rem; }
+.aufgabenliste { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.aufgabe-link { width: 100%; justify-content: flex-start; text-align: left; min-height: 64px; }
+.aufgabe-link .nr { font-size: 1.4rem; width: 2rem; }
+.aufgabe-link .stern { margin-left: auto; font-size: 1.4rem; color: var(--stern); }
+.aufgabe-link .stern.leer { color: #bbb; }
+.sternzahl { font-size: 1.2rem; font-weight: 700; }
+.sternzahl span { color: var(--stern); }
+
+/* ---------- Kalibriermodus ---------- */
+.seite-kalibrieren .spiel { grid-template-columns: 1fr minmax(300px, 400px); }
+.pinliste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; }
+.pinliste button { width: 100%; justify-content: space-between; min-height: 44px; font-weight: 500; }
+.pinliste button.aktuell { border: 4px solid var(--akzent); }
+.pinliste button.gesetzt::after { content: "✔"; color: var(--richtig); }
+.kalib-punkt { fill: rgba(255, 212, 0, .5); stroke: #000; stroke-width: 1.5; pointer-events: none; }
+.kalib-punkt.aktuell { fill: rgba(11, 92, 173, .6); stroke: #fff; stroke-width: 2.5; }
+.kalib-text { font: bold 11px sans-serif; fill: #000; paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
+textarea.export { width: 100%; min-height: 10rem; font: 13px/1.3 ui-monospace, Menlo, monospace; }
+.eingabe { width: 100%; min-height: 44px; font: inherit; padding: .3rem .6rem; border: 2px solid var(--rand); border-radius: 10px; margin-top: .3rem; }
+.pfeile .knopf { font-size: 1.3rem; }
+.knopf.rund.klein-text { font-size: .85rem; }
+.kabel-knopf { flex: 1 1 100%; flex-direction: row; justify-content: flex-start; gap: .6rem; min-height: 56px; }
+.kabel-wahl { font-size: 1rem; text-align: left; }
+
+/* ---------- Modus "Bauteile anordnen" ---------- */
+.brett.anordnen .kabel { opacity: .35; }
+.brett.anordnen .kabel-treffer { pointer-events: none; }
+.brett.zieht .kabel, .brett.zieht .pin-ring { opacity: .12; }
+.bauteil-rahmen { fill: rgba(11, 92, 173, .06); stroke: var(--akzent); stroke-width: 2; stroke-dasharray: 8 6; pointer-events: none; }
+.bauteil-rahmen.gewaehlt { fill: rgba(11, 92, 173, .14); stroke-width: 5; stroke-dasharray: none; }
+.nur-anordnen { display: none !important; }
+body.modus-anordnen .nur-anordnen { display: flex !important; }
+body.modus-anordnen .nur-verkabeln { display: none !important; }
+.anordnen-leiste { flex-direction: column; gap: .7rem; }
+.knopf:disabled { opacity: .45; cursor: default; }
