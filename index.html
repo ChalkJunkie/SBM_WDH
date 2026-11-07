@@ -7,8 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Seifenblasen">
+  <meta name="theme-color" content="#0b5cad">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
   <title>Seifenblasenmaschine – Wiederholung</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-06k">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-07a">
 </head>
 <body class="seite-start">
   <header class="kopf">
@@ -51,12 +54,12 @@
   </main>
 
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-06k"></script>
-  <script src="data/aufgaben.js?v=2026-11-06k"></script>
-  <script src="data/code.js?v=2026-11-06k"></script>
-  <script src="data/fehlersuche.js?v=2026-11-06k"></script>
-  <script src="data/vergleich.js?v=2026-11-06k"></script>
-  <script src="data/lesen.js?v=2026-11-06k"></script>
+  <script src="js/gemeinsam.js?v=2026-11-07a"></script>
+  <script src="data/aufgaben.js?v=2026-11-07a"></script>
+  <script src="data/code.js?v=2026-11-07a"></script>
+  <script src="data/fehlersuche.js?v=2026-11-07a"></script>
+  <script src="data/vergleich.js?v=2026-11-07a"></script>
+  <script src="data/lesen.js?v=2026-11-07a"></script>
   <script>
     // Liste der Verdrahtungsaufgaben mit Sternen
     (function () {
@@ -67,7 +70,7 @@
           var geloest = Fortschritt.istGeloest(bereich, a.id);
           var li = document.createElement("li");
           li.innerHTML = '<a class="knopf aufgabe-link" href="' + adresse + a.id + '">' +
-            '<span class="nr">' + (i + 1) + "</span><span>" + esc(a.titel) + "</span>" +
+            (eintraege.length > 1 ? '<span class="nr">' + (i + 1) + "</span>" : "") + "<span>" + esc(a.titel) + "</span>" +
             '<span class="stern' + (geloest ? "" : " leer") + '" aria-label="' + (geloest ? "gelöst" : "noch nicht gelöst") + '">' +
             (geloest ? "★" : "☆") + "</span></a>";
           liste.appendChild(li);
@@ -78,7 +81,16 @@
       fuelle("liste2b", DATEN.fehlersuche, "fehlersuche4", "fehlersuche.html?aufgabe=");
       fuelle("liste2c", DATEN.vergleich, "vergleich", "vergleich.html?uebung=");
       fuelle("liste3", DATEN.lesen, "lesen", "lesen.html?aufgabe=");
-      document.getElementById("version").textContent = "Version " + SPIEL_VERSION;
+      document.getElementById("version").textContent = versionsText();
+      // Neue Version im Hintergrund geladen (Offline-Web-App)? Dann Startseite einmal neu laden.
+      if (SPIEL_OFFLINE && "serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        var neuGeladen = false;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (neuGeladen) return;
+          neuGeladen = true;
+          window.location.reload();
+        });
+      }
       document.getElementById("sternzahl").innerHTML = "<span>★</span> " + Fortschritt.anzahlSterne() + " von " + Fortschritt.anzahlAufgaben() + " Sternen";
       // Alles geschafft (z. B. schon vor einem Update)? Dann jetzt gratulieren.
       pruefeGlueckwunsch();

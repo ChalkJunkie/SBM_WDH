@@ -14,7 +14,6 @@
 //           code      (freiwillig) Codezeilen, die gezeigt werden
 //           richtig   "zwei", "vier" oder "keine"
 //           erklaerung, dokument
-// Alle Texte sind von mir und stehen in ZU_PRUEFEN.md.
 // =====================================================================
 DATEN.vergleich = [
 

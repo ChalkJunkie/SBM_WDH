@@ -1,0 +1,15 @@
+{
+  "name": "Arduino-Seifenblasenmaschine – Wiederholung",
+  "short_name": "Seifenblasen",
+  "description": "Wiederholungsspiel: Servo, Taster und DC-Motor am Arduino verkabeln und programmieren.",
+  "lang": "de",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f4ee",
+  "theme_color": "#0b5cad",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

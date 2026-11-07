@@ -15,7 +15,6 @@
 //               saetze     ids der Sätze, die beim Fehler markiert werden
 //               tipp       Hinweis bei falscher Antwort (verrät die Lösung nicht)
 // Ein Stern gibt es, wenn alle Fragen richtig beantwortet sind.
-// Alle Texte sind von mir und stehen in ZU_PRUEFEN.md (Abschnitt J).
 // =====================================================================
 DATEN.lesen = [
   {

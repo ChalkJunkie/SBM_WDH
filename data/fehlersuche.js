@@ -20,8 +20,6 @@
 //                tippen dann die Zeile an, VOR der sie fehlen müsste.
 //     warum      Erklärung
 //     dokument   Wo man nachschlagen kann (Kurzname aus dokumente.js)
-// Alle Aufgaben und Erklärungen hier sind von mir geschrieben und stehen
-// deshalb in ZU_PRUEFEN.md.
 // =====================================================================
 DATEN.fehlersuche = [
 

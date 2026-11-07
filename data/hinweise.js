@@ -9,8 +9,6 @@
 // dokument  Wo man nachschlagen kann (Kurzname aus dokumente.js).
 //           "@aufgabe" = das erste Dokument der jeweiligen Aufgabe.
 //           null = kein Dokument anzeigen.
-// Alle Texte hier stammen NICHT wörtlich aus deinen Materialien und
-// stehen deshalb auch in ZU_PRUEFEN.md.
 // =====================================================================
 DATEN.hinweise = {
 

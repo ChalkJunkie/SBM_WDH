@@ -11,7 +11,31 @@
 // Versionsnummer des Spiels. Steht auch hinter allen Dateinamen in den
 // HTML-Dateien (?v=...), damit der Browser nach einem Update keine alten
 // Dateien aus dem Zwischenspeicher mischt. Wird auf der Startseite angezeigt.
-var SPIEL_VERSION = "2026-11-06k";
+var SPIEL_VERSION = "2026-11-07a";
+
+// Wie viele Runden (Rückmeldung -> Umsetzung -> Test) es gab und wie viel
+// Arbeitszeit der Lehrkraft ungefähr im Spiel steckt. Wird von werkzeuge/veroeffentlichen.py aus
+// werkzeuge/iterationen.json eingetragen, bitte nicht von Hand ändern.
+var SPIEL_ITERATIONEN = 21;
+var SPIEL_STUNDEN = 6;
+
+// Offline-Web-App: nur in der veröffentlichten Version eingeschaltet
+// (dort trägt werkzeuge/veroeffentlichen.py "true" ein).
+var SPIEL_OFFLINE = true;
+
+// Text für die Startseite, z. B. "Version 2026-11-07a; 21 Iterationen, ca. 6 Stunden Arbeit"
+function versionsText() {
+  return "Version " + SPIEL_VERSION + "; " + SPIEL_ITERATIONEN + " Iterationen, ca. " + SPIEL_STUNDEN + " Stunden Arbeit";
+}
+
+// Service Worker anmelden: Er speichert alle Spieldateien auf dem Gerät,
+// damit das Spiel nach dem ersten Öffnen auch ohne Internet läuft.
+// Geht nur über https (z. B. GitHub Pages), nicht per Doppelklick.
+if (SPIEL_OFFLINE && "serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  try {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  } catch (e) { /* ohne Offline-Funktion weiterspielen */ }
+}
 
 // Name, unter dem alles im localStorage abgelegt wird.
 var SPEICHER_PRAEFIX = "seifenblasen_";
