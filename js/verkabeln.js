@@ -47,6 +47,8 @@
   // (z. B. aus einer älteren Version des Spiels).
   function gibtEs(k) { return !!Pins.daten(k.a) && !!Pins.daten(k.b); }
   var kabel = (gespeichert.kabel || []).filter(gibtEs);
+  var vorgabeFarben = gespeichert.vorgabeFarben || {};   // Nummer des vorgegebenen Kabels -> eigene Farbe
+  var festeWege = gespeichert.wege || {};                 // Kabel-ID -> von Hand verlegter Weg
   var verlauf = [];                           // für "Rückgängig"
   var naechsteId = 1;
   kabel.forEach(function (k) {
@@ -73,7 +75,7 @@
   function vorgegebeneKabel() {
     if (selbst) return [];
     return vorgabe.map(function (paar, i) {
-      return { id: "v" + i, a: paar[0], b: paar[1], farbe: autoFarbeFest(paar[0], paar[1]), gesperrt: true,
+      return { id: "v" + i, a: paar[0], b: paar[1], farbe: vorgabeFarben[i] || autoFarbeFest(paar[0], paar[1]), gesperrt: true,
                widerstand: paar[2] === "widerstand" || undefined };
     });
   }
@@ -82,7 +84,7 @@
   function alleKabel() { return vorgegebeneKabel().concat(kabel); }
 
   function speichern() {
-    Speicher.schreiben(speicherName, { kabel: kabel, selbst: selbst });
+    Speicher.schreiben(speicherName, { kabel: kabel, selbst: selbst, vorgabeFarben: vorgabeFarben, wege: festeWege });
   }
 
   // ---------- Seite aufbauen ----------
@@ -130,7 +132,9 @@
     box.addEventListener("change", function () {
       selbst = box.checked;
       zeigeAuftrag();
-      kabel = []; verlauf = [];
+      kabel = []; verlauf = []; vorgabeFarben = {}; festeWege = {};
+      kabelAbwaehlen();
+      brett.setzeFesteWege(festeWege);
       speichern(); geaendert();
     });
   }
@@ -145,14 +149,20 @@
     b.setAttribute("aria-checked", wert === gewaehlteFarbe ? "true" : "false");
     b.setAttribute("aria-label", "Kabelfarbe " + beschriftung);
     b.innerHTML = stil;
+    b.setAttribute("data-farbe", wert);
     b.addEventListener("click", function () {
+      if (gewaehltesKabel) { umfaerben(wert); return; }
       gewaehlteFarbe = wert;
-      Array.prototype.forEach.call(farbwahl.children, function (c) {
-        c.classList.remove("aktiv"); c.setAttribute("aria-checked", "false");
-      });
-      b.classList.add("aktiv"); b.setAttribute("aria-checked", "true");
+      zeigeFarbe(wert);
     });
     farbwahl.appendChild(b);
+  }
+  // Markiert eine Farbe in der Farbwahl als aktiv
+  function zeigeFarbe(wert) {
+    Array.prototype.forEach.call(farbwahl.children, function (c) {
+      var an = c.getAttribute("data-farbe") === wert;
+      c.classList.toggle("aktiv", an); c.setAttribute("aria-checked", an ? "true" : "false");
+    });
   }
   farbknopf("auto", "automatisch", '<span class="farbe-auto">Auto</span>');
   FARBEN.forEach(function (f) {
@@ -172,6 +182,7 @@
     widerstandKnopf.hidden = false;
     widerstandKnopf.addEventListener("click", function () {
       waehleAb();
+      kabelAbwaehlen();
       if (widerstandModus) { setzeWiderstandModus(false); zeigeAnzeige("Tippe auf einen Anschluss."); return; }
       if (widerstandDa()) {
         zeigeAnzeige("Der Widerstand steckt schon. Tippe ihn an, wenn du ihn herausnehmen willst.", true);
@@ -235,8 +246,16 @@
         ? "Dort ist kein Platz: Bauteile brauchen etwas Abstand zueinander, damit die Kabel durchpassen."
         : "<strong>" + esc(DATEN.pins[n].name) + "</strong> verschoben.", ergebnis !== "kein_platz");
     },
-    beimLeeren: function () { waehleAb(); zeigeAnzeige("Tippe auf einen Anschluss."); }
+    beimLeeren: function () { waehleAb(); kabelAbwaehlen(); zeigeAnzeige("Tippe auf einen Anschluss."); },
+    // Ein Kabel wurde von Hand verlegt (ecken) oder sein Weg passt nicht mehr (null)
+    beimKabelweg: function (id, ecken) {
+      if (ecken) merkeFuerRueckgaengig();
+      if (ecken) festeWege[id] = ecken; else delete festeWege[id];
+      speichern();
+      if (ecken && id === gewaehltesKabel) zeigeKabelAuswahl();
+    }
   });
+  brett.setzeFesteWege(festeWege);
   brett.setzeKabel(alleKabel());
 
   document.getElementById("zoomPlus").addEventListener("click", function () { brett.zoom.zoomen(1.4); });
@@ -247,6 +266,7 @@
   // ---------- Modus "Bauteile anordnen" ----------
   function anordnenUmschalten(an) {
     waehleAb();
+    kabelAbwaehlen();
     setzeWiderstandModus(false);
     document.body.classList.toggle("modus-anordnen", an);
     brett.setzeAnordnen(an);
@@ -289,6 +309,7 @@
 
   // Antippen in der Nähe von Anschlüssen
   function beimPin(nahe, typ, kabelId) {
+    kabelAbwaehlen();
     // Eindeutig? Dann direkt nehmen, sonst die Lupe öffnen.
     var eindeutig = nahe.length === 1 ||
       (typ !== "touch" && nahe[1].abstand > 2 * nahe[0].abstand) ||
@@ -310,7 +331,7 @@
     });
     // Liegt dort auch ein Kabel, kann man es von hier aus löschen
     if (kabelId) knoepfe.push({
-      text: "✂ Kabel an dieser Stelle …", klasse: "lupe-abbrechen",
+      text: "Kabel an dieser Stelle auswählen", klasse: "lupe-abbrechen",
       aktion: function () { setTimeout(function () { beimKabel(kabelId); }, 0); }
     });
     knoepfe.push({ text: "Abbrechen", klasse: "lupe-abbrechen" });
@@ -350,7 +371,9 @@
     }
     merkeFuerRueckgaengig();
     var farbe = gewaehlteFarbe === "auto" ? autoFarbe(a, s) : gewaehlteFarbe;
-    kabel.push({ id: "k" + (naechsteId++), a: a, b: s, farbe: farbe });
+    var neuesKabel = { id: "k" + (naechsteId++), a: a, b: s, farbe: farbe };
+    if (gewaehlteFarbe !== "auto") neuesKabel.farbeGewaehlt = true;
+    kabel.push(neuesKabel);
     speichern();
     geaendert();
     zeigeAnzeige("Kabel gesteckt: <strong>" + esc(Pins.langerName(a)) + "</strong> ↔ <strong>" + name + "</strong>");
@@ -376,39 +399,121 @@
     d.querySelector(".dialog").classList.add("lupe");
   }
 
+  // ---------- Ausgewähltes Kabel: umfärben, löschen, verlegen ----------
+  var gewaehltesKabel = null;
+  var auswahlLeiste = document.getElementById("kabelAuswahl");
+
   function kabelGewaehlt(id) {
     var k = alleKabel().filter(function (x) { return x.id === id; })[0];
     if (!k) return;
     waehleAb();
+    if (widerstandModus) setzeWiderstandModus(false);
+    gewaehltesKabel = id;
+    brett.setzeKabelAuswahl(id);
+    zeigeKabelAuswahl();
+  }
+
+  function istBatteriekabel(k) { return k.a === "batterie.stecker" || k.b === "batterie.stecker"; }
+
+  function zeigeKabelAuswahl() {
+    var k = alleKabel().filter(function (x) { return x.id === gewaehltesKabel; })[0];
+    if (!k) { kabelAbwaehlen(); return; }
+    var name = esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b));
+    var html, anzeige;
+    if (k.widerstand) {
+      html = "<p><strong>Widerstand</strong><br>" + name + "</p>" +
+        '<button type="button" class="knopf" data-aktion="loeschen">🗑 Widerstand herausnehmen</button>';
+      anzeige = "<strong>Widerstand</strong> ausgewählt.";
+    } else {
+      html = "<p><strong>" + (k.gesperrt ? "Vorgegebenes Kabel" : "Kabel") + "</strong><br>" + name + "</p>" +
+        (istBatteriekabel(k) ? '<p class="klein">Das Batteriekabel ist immer rot und schwarz.</p>'
+                             : '<p class="klein">Tippe oben eine Farbe an, um das Kabel umzufärben.</p>') +
+        (brett.istFest(k.id) ? '<button type="button" class="knopf" data-aktion="automatisch">↺ Automatisch verlegen</button>' : "") +
+        (k.gesperrt ? '<p class="klein">Vorgegebene Kabel löschst du mit „Alles selbst verkabeln“.</p>'
+                    : '<button type="button" class="knopf" data-aktion="loeschen">🗑 Dieses Kabel löschen</button>');
+      anzeige = "<strong>" + name + "</strong> ausgewählt.<small>Ziehe an einem Griff ⇕, um das Kabel anders zu verlegen.</small>";
+    }
+    auswahlLeiste.innerHTML = html;
+    auswahlLeiste.hidden = false;
+    farbwahl.classList.toggle("gesperrt", !!k.widerstand || istBatteriekabel(k));
+    zeigeFarbe(k.widerstand || istBatteriekabel(k) ? "" : farbeVon(k));
+    zeigeAnzeige(anzeige, true);
+  }
+
+  // Welche Farbe aus der Farbwahl gehört zum Kabel? ("auto", wenn nicht selbst gewählt)
+  function farbeVon(k) {
+    if (k.gesperrt) return vorgabeFarben[parseInt(k.id.slice(1), 10)] || "auto";
+    return k.farbeGewaehlt ? k.farbe : "auto";
+  }
+
+  function kabelAbwaehlen() {
+    if (!gewaehltesKabel) return;
+    gewaehltesKabel = null;
+    brett.setzeKabelAuswahl(null);
+    auswahlLeiste.hidden = true;
+    auswahlLeiste.innerHTML = "";
+    farbwahl.classList.remove("gesperrt");
+    zeigeFarbe(gewaehlteFarbe);
+  }
+
+  function umfaerben(wert) {
+    var k = alleKabel().filter(function (x) { return x.id === gewaehltesKabel; })[0];
+    if (!k) return;
+    if (k.widerstand) { zeigeAnzeige("Der Widerstand hat keine Kabelfarbe.", true); return; }
+    if (istBatteriekabel(k)) { zeigeAnzeige("Das Batteriekabel ist immer rot und schwarz.", true); return; }
+    merkeFuerRueckgaengig();
     if (k.gesperrt) {
-      zeigeAnzeige("Dieses Kabel ist vorgegeben. Wenn du alles selbst stecken willst, wähle „Alles selbst verkabeln“.");
+      var nr = parseInt(k.id.slice(1), 10);
+      if (wert === "auto") delete vorgabeFarben[nr]; else vorgabeFarben[nr] = wert;
+    } else {
+      var eigenes = kabel.filter(function (x) { return x.id === k.id; })[0];
+      if (wert === "auto") { eigenes.farbe = autoFarbeFest(eigenes.a, eigenes.b); delete eigenes.farbeGewaehlt; }
+      else { eigenes.farbe = wert; eigenes.farbeGewaehlt = true; }
+    }
+    speichern();
+    brett.setzeKabel(alleKabel());
+    zeigeFarbe(wert);
+  }
+
+  auswahlLeiste.addEventListener("click", function (e) {
+    var knopf = e.target.closest ? e.target.closest("[data-aktion]") : null;
+    if (!knopf || !gewaehltesKabel) return;
+    var id = gewaehltesKabel, k = alleKabel().filter(function (x) { return x.id === id; })[0];
+    if (!k) return;
+    if (knopf.getAttribute("data-aktion") === "automatisch") {
+      merkeFuerRueckgaengig();
+      delete festeWege[id];
+      brett.automatischVerlegen(id);
+      speichern();
+      zeigeKabelAuswahl();
       return;
     }
-    zeigeDialog({
-      titel: k.widerstand ? "Widerstand herausnehmen?" : "Kabel löschen?",
-      html: "<p>" + esc(Pins.langerName(k.a)) + " ↔ " + esc(Pins.langerName(k.b)) + "</p>",
-      knoepfe: [
-        { text: k.widerstand ? "🗑 Herausnehmen" : "🗑 Löschen", haupt: true, aktion: function () {
-          merkeFuerRueckgaengig();
-          kabel = kabel.filter(function (x) { return x.id !== id; });
-          speichern(); geaendert();
-          zeigeAnzeige(k.widerstand ? "Widerstand herausgenommen." : "Kabel gelöscht.");
-        } },
-        { text: "Abbrechen" }
-      ]
-    });
-  }
+    if (k.gesperrt) return;
+    merkeFuerRueckgaengig();
+    kabel = kabel.filter(function (x) { return x.id !== id; });
+    delete festeWege[id];
+    kabelAbwaehlen();
+    speichern(); geaendert();
+    zeigeAnzeige(k.widerstand ? "Widerstand herausgenommen." : "Kabel gelöscht.");
+  });
 
   // ---------- Rückgängig / Alles löschen ----------
   function merkeFuerRueckgaengig() {
-    verlauf.push(JSON.stringify(kabel));
+    verlauf.push(JSON.stringify({ kabel: kabel, vorgabeFarben: vorgabeFarben, wege: festeWege }));
     if (verlauf.length > 50) verlauf.shift();
   }
 
   document.getElementById("rueckgaengig").addEventListener("click", function () {
     if (!verlauf.length) { zeigeAnzeige("Es gibt nichts rückgängig zu machen."); return; }
-    kabel = JSON.parse(verlauf.pop());
-    waehleAb(); speichern(); geaendert();
+    var alt = JSON.parse(verlauf.pop());
+    kabel = alt.kabel; vorgabeFarben = alt.vorgabeFarben; festeWege = alt.wege;
+    kabelAbwaehlen();
+    waehleAb(); speichern();
+    brett.setzeFesteWege(festeWege);
+    brett.setzeMarkierungen(null);
+    brett.kabel = alleKabel();
+    brett.neuVerlegen();
+    geaendert();
     zeigeAnzeige("Rückgängig gemacht.");
   });
 
@@ -421,6 +526,8 @@
         { text: "🗑 Alles löschen", haupt: true, aktion: function () {
           merkeFuerRueckgaengig();
           kabel = [];
+          Object.keys(festeWege).forEach(function (id) { if (id.charAt(0) !== "v") delete festeWege[id]; });
+          kabelAbwaehlen();
           waehleAb(); speichern(); geaendert();
           zeigeAnzeige("Alle eigenen Kabel gelöscht.");
         } },
@@ -448,6 +555,7 @@
 
   document.getElementById("fertig").addEventListener("click", function () {
     waehleAb();
+    kabelAbwaehlen();
     // Noch gar nichts gesteckt? Dann nicht die ganze Lösung als Liste verraten.
     if (!kabel.length) {
       brett.setzeMarkierungen(null);
@@ -525,6 +633,7 @@
   // ohne die gelben Anschluss-Ringe). Speichern oder (auf dem iPad) teilen.
   document.getElementById("exportieren").addEventListener("click", function () {
     waehleAb();
+    kabelAbwaehlen();
     zeigeAnzeige("Das Bild wird erstellt …");
     brett.alsBild().then(function (blob) {
       zeigeAnzeige("Tippe auf einen Anschluss.");

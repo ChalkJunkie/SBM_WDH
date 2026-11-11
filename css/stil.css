@@ -478,3 +478,12 @@ body.zieht-karte { cursor: grabbing; }
 
 /* Vorschau beim Exportieren als Bild */
 .export-vorschau { display: block; max-width: 100%; max-height: 55vh; margin: 0 auto .6rem; border: 2px solid var(--rand); border-radius: 8px; background: #fff; }
+
+/* Ausgewähltes Kabel und Griffe zum Verlegen */
+.kabel-auswahl { fill: none; stroke: rgba(11, 92, 173, .35); stroke-width: 20; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.zieh-griff circle { fill: #fff; stroke: var(--akzent); stroke-width: 2.5; }
+.zieh-griff path { fill: var(--akzent); }
+.zieh-griff { pointer-events: none; }
+.farbwahl.gesperrt { opacity: .4; }
+.kabel-auswahl-leiste { display: flex; flex-direction: column; gap: .5rem; padding: .6rem .7rem; border: 2px solid var(--akzent); border-radius: 12px; background: var(--info-hell); }
+.kabel-auswahl-leiste p { margin: 0; }

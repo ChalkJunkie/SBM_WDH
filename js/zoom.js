@@ -108,6 +108,7 @@ ZoomFlaeche.prototype.massstab = function () {
 ZoomFlaeche.prototype._anwenden = function () {
   var a = this.ansicht;
   this.svg.setAttribute("viewBox", a.x + " " + a.y + " " + a.b + " " + a.h);
+  if (this.beimZoom) this.beimZoom();
 };
 
 // ---------- Finger, Stift und Maus ----------

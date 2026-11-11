@@ -151,7 +151,84 @@ function Kabelwege(bauteile) {
   this.historie = {};   // Knoten -> Zusatzkosten (Stellen, an denen es immer wieder Kreuzungen gab)
   this.kanten = {};     // "k1-k2" -> [Kabel-IDs]
   this.knoten = {};     // Knoten -> [{ id, waag, senk, knick }]
+  this.fest = {};       // Kabel-ID -> true, wenn von Hand verlegt (wird nie automatisch verschoben)
 }
+
+// ---------- Von Hand verlegte Kabel ----------
+// Nächster Rasterknoten zu einem Punkt, aber nur wenn er höchstens "toleranz"
+// entfernt liegt (sonst -1). Kleine Abweichungen entstehen, wenn sich das
+// Raster ändert, weil ein anderes Bauteil verschoben wurde.
+Kabelwege.prototype.knotenNah = function (x, y, toleranz) {
+  function naechster(liste, v) {
+    var best = -1, bd = Infinity;
+    for (var i = 0; i < liste.length; i++) { var d = Math.abs(liste[i] - v); if (d < bd) { bd = d; best = i; } }
+    return bd <= toleranz ? best : -1;
+  }
+  var ix = naechster(this.xs, x), iy = naechster(this.ys, y);
+  return (ix < 0 || iy < 0) ? -1 : ix * this.ny + iy;
+};
+
+// Eckknoten eines Weges (Anfang, Knicke, Ende)
+Kabelwege.prototype.ecken = function (weg) {
+  var self = this, aus = [];
+  weg.forEach(function (k, i) {
+    if (i === 0 || i === weg.length - 1) { aus.push(k); return; }
+    var a = self._punkt(weg[i - 1]), p = self._punkt(k), b = self._punkt(weg[i + 1]);
+    var gerade = (a.x === p.x && p.x === b.x) || (a.y === p.y && p.y === b.y);
+    if (!gerade) aus.push(k);
+  });
+  return aus;
+};
+
+// Aus Eckknoten den vollständigen Weg (alle Rasterknoten) machen.
+// null, wenn zwei Ecken nicht waagrecht oder senkrecht verbunden sind.
+Kabelwege.prototype.wegAusEcken = function (ecken) {
+  var ny = this.ny, weg = [];
+  for (var i = 0; i < ecken.length; i++) {
+    var k = ecken[i];
+    if (!weg.length) { weg.push(k); continue; }
+    var v = weg[weg.length - 1];
+    var vx = Math.floor(v / ny), vy = v % ny, kx = Math.floor(k / ny), ky = k % ny;
+    if (vx !== kx && vy !== ky) return null;
+    var sx = kx > vx ? 1 : kx < vx ? -1 : 0, sy = ky > vy ? 1 : ky < vy ? -1 : 0;
+    while (vx !== kx || vy !== ky) { vx += sx; vy += sy; weg.push(vx * ny + vy); }
+  }
+  return weg;
+};
+
+// Ein Kabel genau auf diesem Weg festlegen. eckpunkte: [{x, y}] auf dem
+// Raster, vom geraden Anfang des einen Pins bis zu dem des anderen.
+// Gibt die Punkte zum Zeichnen zurück oder null, wenn der Weg nicht (mehr) passt.
+Kabelwege.prototype.legeFest = function (id, a, b, eckpunkte) {
+  var pa = this.pins[a], pb = this.pins[b], self = this;
+  if (!pa || !pb || !eckpunkte || eckpunkte.length < 1) return null;
+  var ecken = eckpunkte.map(function (p) { return self.knotenNah(p.x, p.y, 7); });
+  if (ecken.some(function (k) { return k < 0; })) return null;
+  if (ecken[0] !== pa.knoten || ecken[ecken.length - 1] !== pb.knoten) return null;
+  var weg = this.wegAusEcken(ecken);
+  if (!weg) return null;
+  this.entferne(id);
+  this.fest[id] = true;
+  return this._registriere(id, weg, a, b);
+};
+
+// Kabel, die auf dem (von Hand gelegten) Kabel "id" liegen, neu legen,
+// damit sie ihm ausweichen.
+Kabelwege.prototype.weicheAus = function (id) {
+  var bel = this.belegung[id], self = this, andere = {};
+  if (!bel) return;
+  bel.kanten.forEach(function (kk) { (self.kanten[kk] || []).forEach(function (x) { if (x !== id) andere[x] = true; }); });
+  bel.knoten.forEach(function (k) { (self.knoten[k] || []).forEach(function (v) { if (v.id !== id) andere[v.id] = true; }); });
+  Object.keys(andere).forEach(function (x) {
+    var alt = self.belegung[x];
+    if (!alt || self.fest[x]) return;
+    self.entferne(x);
+    if (!self.lege(x, alt.a, alt.b)) self._registriere(x, alt.weg, alt.a, alt.b);
+  });
+};
+
+// Von Hand verlegtes Kabel wieder der Automatik überlassen
+Kabelwege.prototype.loese = function (id) { delete this.fest[id]; };
 
 // Rasterlinien: wichtige Linien (Pins, Bauteilränder) plus regelmäßige
 // Bahnen dazwischen. Zu nah beieinander liegende Bahnen werden weggelassen.
@@ -383,7 +460,7 @@ Kabelwege.prototype.verbessere = function (runden, frist) {
         self.historie[k] = (self.historie[k] || 0) + KABELWEG.KREUZUNG;
       });
     });
-    var ids = Object.keys(this.belegung).filter(function (id) { return self.probleme(id) > 0; });
+    var ids = Object.keys(this.belegung).filter(function (id) { return !self.fest[id] && self.probleme(id) > 0; });
     ids.sort(function (x, y) { return self.probleme(y) - self.probleme(x); });
     ids.forEach(function (id) {
       var alt = self.belegung[id];
@@ -442,12 +519,13 @@ Kabelwege.prototype.neuOrdnen = function (frist) {
   frist = frist || (jetzt() + KABELWEG.ZEIT);
   var start = this._sichern();
   var bestes = start, besterWert = this.bewertung();
-  var kurz = this.sortiere(start);
-  var problemZuerst = start.filter(function (k) { return self.probleme(k.id) > 0; })
+  var beweglich = start.filter(function (k) { return !self.fest[k.id]; });
+  var kurz = this.sortiere(beweglich);
+  var problemZuerst = beweglich.filter(function (k) { return self.probleme(k.id) > 0; })
     .concat(kurz.filter(function (k) { return self.probleme(k.id) === 0; }));
   [kurz, kurz.slice().reverse(), problemZuerst].forEach(function (reihenfolge) {
     if ((self.gesamtProbleme() === 0 && bestes !== start) || jetzt() > frist) return;   // fertig oder keine Zeit mehr
-    Object.keys(self.belegung).forEach(function (id) { self.entferne(id); });
+    Object.keys(self.belegung).forEach(function (id) { if (!self.fest[id]) self.entferne(id); });
     reihenfolge.forEach(function (k) { self.lege(k.id, k.a, k.b); });
     self.verbessere(2, frist);
     var vollstaendig = reihenfolge.every(function (k) { return self.belegung[k.id]; });

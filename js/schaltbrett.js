@@ -133,7 +133,10 @@ function Schaltbrett(svg, optionen) {
   this.ebenePins = svgElement("g");
   this.ebeneMarken = svgElement("g");
   this.ebeneRahmen = svgElement("g");   // Rahmen um Bauteile im Modus "anordnen"
-  [this.ebeneBauteile, this.ebeneKabel, this.ebenePins, this.ebeneMarken, this.ebeneRahmen].forEach(function (e) { svg.appendChild(e); });
+  this.ebeneGriffe = svgElement("g");   // Griffe zum Verlegen des ausgewählten Kabels
+  [this.ebeneBauteile, this.ebeneKabel, this.ebenePins, this.ebeneMarken, this.ebeneRahmen, this.ebeneGriffe].forEach(function (e) { svg.appendChild(e); });
+  this.festeWege = {};          // Kabel-ID -> [{x, y}] Eckpunkte, wenn von Hand verlegt
+  this.kabelAuswahl = null;     // ausgewähltes Kabel (zum Umfärben, Löschen, Verlegen)
   this.anordnen = false;        // Modus "Bauteile anordnen" aktiv?
   this.gewaehlt = null;         // im Anordnen-Modus ausgewähltes Bauteil
 
@@ -148,6 +151,13 @@ function Schaltbrett(svg, optionen) {
     beimAntippen: function (cx, cy, typ, ziel) { self._antippen(cx, cy, typ, ziel); },
     objektGreifen: function (cx, cy) { return self._greifen(cx, cy); }
   });
+  // Griffe nach dem Zoomen in gleicher Bildschirmgröße neu zeichnen
+  var griffeGeplant = false;
+  this.zoom.beimZoom = function () {
+    if (!self.kabelAuswahl || griffeGeplant) return;
+    griffeGeplant = true;
+    (window.requestAnimationFrame || setTimeout)(function () { griffeGeplant = false; self._zeichneGriffe(); });
+  };
   var r = this.rahmen();
   this.zoom.setzeInhalt(r.x, r.y, r.b, r.h);
   window.addEventListener("resize", function () { self.zoom.groesseGeaendert(); });
@@ -249,7 +259,7 @@ Schaltbrett.prototype.ueberlappt = function (n) {
 };
 
 Schaltbrett.prototype._greifen = function (cx, cy) {
-  if (!this.anordnen) return null;
+  if (!this.anordnen) return this._kabelGreifen(cx, cy);
   var n = this.bauteilBei(cx, cy);
   if (!n) return null;
   var self = this, L = DATEN.schaltbrett[n], start = { x: L.x, y: L.y };
@@ -382,14 +392,26 @@ Schaltbrett.prototype.setzeKabel = function (kabel) {
   kabel.forEach(function (k) { neu[k.id] = k; });
   Object.keys(this.wege.belegung).forEach(function (id) {
     var r = self.wege.belegung[id], k = neu[id];
-    if (!k || k.a !== r.a || k.b !== r.b) self.wege.entferne(id);
+    if (!k || k.a !== r.a || k.b !== r.b) { self.wege.entferne(id); self.wege.loese(id); }
   });
+  // Von Hand verlegte Kabel zuerst festlegen: Die anderen weichen ihnen aus.
+  // Passt ein Weg nicht mehr (z. B. Bauteil verschoben), wird das Kabel
+  // wieder automatisch verlegt.
+  var ungueltig = [];
+  kabel.forEach(function (k) {
+    var fw = self.festeWege[k.id];
+    if (!fw || (self.wege.belegung[k.id] && self.wege.fest[k.id])) return;
+    if (!self.wege.legeFest(k.id, k.a, k.b, fw)) { delete self.festeWege[k.id]; ungueltig.push(k.id); }
+  });
+  Object.keys(this.festeWege).forEach(function (id) { if (!neu[id]) delete self.festeWege[id]; });
   var fehlend = kabel.filter(function (k) { return !self.wege.belegung[k.id]; });
   if (fehlend.length > 1) fehlend = this.wege.sortiere(fehlend);
   fehlend.forEach(function (k) { self.wege.lege(k.id, k.a, k.b); });
   this.kabel = alle;
+  if (this.kabelAuswahl && !alle.some(function (k) { return k.id === self.kabelAuswahl; })) this.kabelAuswahl = null;
   this._routenUebernehmen(alle);
   this.zeichneKabel();
+  if (this.optionen.beimKabelweg) ungueltig.forEach(function (id) { self.optionen.beimKabelweg(id, null); });
   // Danach kurz "aufräumen" (Kreuzungen auflösen, mit Zeitlimit). Das passiert
   // erst nach dem Zeichnen, damit das neue Kabel sofort zu sehen ist.
   clearTimeout(this._aufraeumTimer);
@@ -491,6 +513,10 @@ Schaltbrett.prototype.zeichneKabel = function () {
 
   var widerstaende = [];
   this.kabel.forEach(function (k) {
+    // Ausgewähltes Kabel: breiter, heller Schein darunter
+    if (k.id === self.kabelAuswahl && self.routen[k.id]) {
+      self.ebeneKabel.appendChild(svgElement("path", { d: Kabelwege.pfad(self.routen[k.id].punkte).d, "class": "kabel-auswahl" }));
+    }
     if (k.widerstand) { widerstaende.push(k); return; }
     if (k.a === "batterie.stecker" || k.b === "batterie.stecker") { self._zeichneBatteriekabel(k, m.kabel[k.id]); return; }
     var a = self.pinPosition(k.a), b = self.pinPosition(k.b);
@@ -518,6 +544,8 @@ Schaltbrett.prototype.zeichneKabel = function () {
     self.ebeneMarken.appendChild(svgElement("circle", { cx: p.x, cy: p.y, r: 14, "class": "pin-fehlt-ring" }));
     self._marke({ x: p.x, y: p.y - 30 }, m.pins[s], "fehlt");
   });
+
+  this._zeichneGriffe();
 
   if (this.auswahl) {
     var pa = this.pinPosition(this.auswahl);
@@ -693,7 +721,7 @@ Schaltbrett.prototype.alsBild = function () {
       if (c.nodeType === 1) {
         var kl = c.getAttribute("class") || "";
         // Unsichtbare Trefferflächen und Fehlermuster weglassen
-        if (/\b(kabel-treffer|kabel-falsch-muster)\b/.test(kl)) continue;
+        if (/\b(kabel-treffer|kabel-falsch-muster|kabel-auswahl)\b/.test(kl)) continue;
       }
       kopie.appendChild(kopiere(c));
     }
@@ -756,4 +784,145 @@ Schaltbrett.prototype.alsBild = function () {
       bild.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(text);
     });
   });
+};
+
+// =====================================================================
+// Kabel auswählen und von Hand verlegen
+// ---------------------------------------------------------------------
+// Ein ausgewähltes Kabel bekommt kleine Griffe auf seinen geraden
+// Stücken. Zieht man ein Stück zur Seite, rastet es auf der nächsten
+// Rasterlinie ein, die Ecken bleiben rechtwinklig. Danach ist das Kabel
+// "fest": Die Automatik verschiebt es nicht mehr, andere Kabel weichen aus.
+// =====================================================================
+Schaltbrett.prototype.setzeKabelAuswahl = function (id) {
+  this.kabelAuswahl = id || null;
+  this.zeichneKabel();
+};
+
+// { id: [[x, y], ...] } aus dem Speicher übernehmen
+Schaltbrett.prototype.setzeFesteWege = function (wege) {
+  var self = this;
+  this.festeWege = {};
+  Object.keys(wege || {}).forEach(function (id) {
+    self.festeWege[id] = wege[id].map(function (p) { return { x: p[0], y: p[1] }; });
+  });
+};
+
+Schaltbrett.prototype.istFest = function (id) { return !!this.festeWege[id]; };
+
+// Alle Kabel neu verlegen (z. B. nach "Rückgängig")
+Schaltbrett.prototype.neuVerlegen = function () {
+  this.wege = new Kabelwege(this.bauteile);
+  var kabel = this.kabel;
+  this.kabel = [];
+  this.setzeKabel(kabel);
+};
+
+// Von Hand verlegtes Kabel wieder automatisch verlegen
+Schaltbrett.prototype.automatischVerlegen = function (id) {
+  var k = this.kabel.filter(function (x) { return x.id === id; })[0];
+  delete this.festeWege[id];
+  this.wege.loese(id);
+  if (!k || k.widerstand) return;
+  this.wege.entferne(id);
+  this.wege.lege(id, k.a, k.b);
+  this._aufraeumen();
+};
+
+Schaltbrett.prototype._aufraeumen = function () {
+  var start = jetzt();
+  this.wege.verbessere(5, start + KABELWEG.ZEIT / 2);
+  this.wege.neuOrdnen(start + KABELWEG.ZEIT);
+  this._routenUebernehmen(this.kabel);
+  this.zeichneKabel();
+};
+
+// Eckpunkte (Rasterknoten) des ausgewählten Kabels
+Schaltbrett.prototype._ecken = function (id) {
+  var bel = this.wege.belegung[id], w = this.wege;
+  if (!bel) return null;
+  return w.ecken(bel.weg).map(function (n) { return w._punkt(n); });
+};
+
+// Griffe in der Mitte jedes geraden Stücks (nur zur Anzeige)
+Schaltbrett.prototype._zeichneGriffe = function () {
+  var id = this.kabelAuswahl, self = this;
+  this.ebeneGriffe.innerHTML = "";
+  if (!id || this.anordnen || this._ziehWeg) return;
+  var k = this.kabel.filter(function (x) { return x.id === id; })[0];
+  if (!k || k.widerstand) return;
+  var E = this._ecken(id);
+  if (!E || E.length < 2) return;
+  // Griffe immer etwa gleich groß auf dem Bildschirm (ca. 22 px)
+  var f = 1 / (this.zoom.massstab() || 1), r = 11 * f, pf = 6 * f;
+  for (var i = 0; i < E.length - 1; i++) {
+    var l = Math.abs(E[i + 1].x - E[i].x) + Math.abs(E[i + 1].y - E[i].y);
+    if (l < 14) continue;
+    var waag = Math.abs(E[i].y - E[i + 1].y) < 0.01;
+    var m = { x: (E[i].x + E[i + 1].x) / 2, y: (E[i].y + E[i + 1].y) / 2 };
+    var g = svgElement("g", { "class": "zieh-griff" });
+    g.appendChild(svgElement("circle", { cx: m.x, cy: m.y, r: r, style: "stroke-width:" + (2.5 * f) + "px" }));
+    // kleiner Doppelpfeil quer zum Kabel: in diese Richtung lässt es sich ziehen
+    var h = pf * 0.6;
+    var d = waag ? "M" + m.x + " " + (m.y - pf - h) + " l" + (-h) + " " + h + " h" + (2 * h) + " z M" + m.x + " " + (m.y + pf + h) + " l" + (-h) + " " + (-h) + " h" + (2 * h) + " z"
+                 : "M" + (m.x - pf - h) + " " + m.y + " l" + h + " " + (-h) + " v" + (2 * h) + " z M" + (m.x + pf + h) + " " + m.y + " l" + (-h) + " " + (-h) + " v" + (2 * h) + " z";
+    g.appendChild(svgElement("path", { d: d }));
+    self.ebeneGriffe.appendChild(g);
+  }
+};
+
+// Beim Aufsetzen des Fingers: liegt dort ein Stück des ausgewählten Kabels?
+Schaltbrett.prototype._kabelGreifen = function (cx, cy) {
+  var id = this.kabelAuswahl, self = this;
+  if (!id) return null;
+  var k = this.kabel.filter(function (x) { return x.id === id; })[0];
+  if (!k || k.widerstand) return null;
+  var E = this._ecken(id);
+  if (!E || E.length < 2) return null;
+  var p = this.zoom.clientZuBrett(cx, cy), radius = 22 / this.zoom.massstab();
+  var j = -1, best = Infinity;
+  for (var i = 0; i < E.length - 1; i++) {
+    var a = E[i], b = E[i + 1], dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+    if (!l2) continue;
+    var t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2));
+    var d = Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+    if (d < best) { best = d; j = i; }
+  }
+  if (j < 0 || best > radius) return null;
+  var waag = Math.abs(E[j].y - E[j + 1].y) < 0.01;
+  // Am Anfang und Ende einen festen Eckpunkt einfügen, damit das Kabel am Pin bleibt
+  var F = E.map(function (q) { return { x: q.x, y: q.y }; });
+  if (j === 0) { F.unshift({ x: F[0].x, y: F[0].y }); j = 1; }
+  if (j === F.length - 2) F.push({ x: F[F.length - 1].x, y: F[F.length - 1].y });
+  var start = waag ? F[j].y : F[j].x;
+  var linien = waag ? this.wege.ys : this.wege.xs;
+  var pa = this.pinPosition(k.a), pb = this.pinPosition(k.b), aktuell = start;
+  function naechsteLinie(v) {
+    var best2 = linien[0];
+    linien.forEach(function (l) { if (Math.abs(l - v) < Math.abs(best2 - v)) best2 = l; });
+    return best2;
+  }
+  return {
+    bewege: function (dx, dy) {
+      var v = naechsteLinie(start + (waag ? dy : dx));
+      if (v === aktuell && self._ziehWeg) return;
+      aktuell = v;
+      var G = F.map(function (q) { return { x: q.x, y: q.y }; });
+      if (waag) { G[j].y = v; G[j + 1].y = v; } else { G[j].x = v; G[j + 1].x = v; }
+      self._ziehWeg = { id: id, ecken: G };
+      self.routen[id] = { punkte: Kabelwege.vereinfache([pa].concat(G).concat([pb])) };
+      self.zeichneKabel();
+    },
+    loslassen: function (gezogen) {
+      var zw = self._ziehWeg;
+      self._ziehWeg = null;
+      if (!gezogen || !zw || aktuell === start) { self._routenUebernehmen(self.kabel); self.zeichneKabel(); return; }
+      var ecken = Kabelwege.vereinfache(zw.ecken);
+      if (!self.wege.legeFest(id, k.a, k.b, ecken)) { self._routenUebernehmen(self.kabel); self.zeichneKabel(); return; }
+      self.festeWege[id] = ecken;
+      self.wege.weicheAus(id);
+      self._aufraeumen();
+      if (self.optionen.beimKabelweg) self.optionen.beimKabelweg(id, ecken.map(function (q) { return [q.x, q.y]; }));
+    }
+  };
 };

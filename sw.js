@@ -2,7 +2,7 @@
 // Speichert beim ersten Öffnen alle Spieldateien auf dem Gerät. Danach
 // kommen sie aus dem Speicher, auch ohne Internet. Bei einer neuen
 // Version (anderer Cache-Name) werden alle Dateien neu geladen.
-var CACHE = "seifenblasen-2026-11-11a";
+var CACHE = "seifenblasen-2026-11-11b";
 var DATEIEN = [
   "./",
   "assets/9V-Batterie.png",
