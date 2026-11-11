@@ -654,3 +654,106 @@ Schaltbrett.prototype.zeigeStellen = function (punkte) {
     setTimeout(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 1600);
   });
 };
+
+// =====================================================================
+// Als Bild exportieren (PNG, weißer Hintergrund)
+// ---------------------------------------------------------------------
+// Kopiert nur Bauteile und Kabel in eine eigene SVG, ohne die gelben
+// Anschluss-Ringe, Fehlermarkierungen und Auswahl. Die Bilder werden
+// eingebettet, damit der Browser alles auf eine Leinwand malen darf.
+// Gibt ein Promise mit einem PNG-Blob zurück.
+// =====================================================================
+Schaltbrett.prototype.alsBild = function () {
+  var RAND = 30, FAKTOR = 2, MAX = 4096;
+
+  // Ausschnitt: alle Bauteile und Kabel
+  var a = this.ebeneBauteile.getBBox(), k = this.ebeneKabel.getBBox();
+  var x0 = Math.min(a.x, k.width ? k.x : a.x) - RAND, y0 = Math.min(a.y, k.height ? k.y : a.y) - RAND;
+  var x1 = Math.max(a.x + a.width, k.width ? k.x + k.width : 0) + RAND;
+  var y1 = Math.max(a.y + a.height, k.height ? k.y + k.height : 0) + RAND;
+  var b = x1 - x0, h = y1 - y0;
+  var faktor = Math.min(FAKTOR, MAX / b, MAX / h);
+  var breite = Math.round(b * faktor), hoehe = Math.round(h * faktor);
+
+  var svg = svgElement("svg", { xmlns: SVG_NS, width: breite, height: hoehe, viewBox: x0 + " " + y0 + " " + b + " " + h });
+  svg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+  svg.appendChild(svgElement("rect", { x: x0, y: y0, width: b, height: h, fill: "#ffffff" }));
+
+  // Aussehen aus dem Stylesheet direkt an die Elemente schreiben
+  var EIGENSCHAFTEN = ["fill", "fill-opacity", "stroke", "stroke-width", "stroke-opacity", "stroke-linecap",
+    "stroke-linejoin", "stroke-dasharray", "opacity", "display", "visibility"];
+  function kopiere(original) {
+    var kopie = original.cloneNode(false);
+    if (original.nodeType === 1) {
+      var st = window.getComputedStyle(original);
+      kopie.setAttribute("style", EIGENSCHAFTEN.map(function (e) { return e + ":" + st.getPropertyValue(e); }).join(";"));
+      kopie.removeAttribute("class");
+    }
+    for (var c = original.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType === 1) {
+        var kl = c.getAttribute("class") || "";
+        // Unsichtbare Trefferflächen und Fehlermuster weglassen
+        if (/\b(kabel-treffer|kabel-falsch-muster)\b/.test(kl)) continue;
+      }
+      kopie.appendChild(kopiere(c));
+    }
+    return kopie;
+  }
+  svg.appendChild(kopiere(this.ebeneBauteile));
+  var kabel = kopiere(this.ebeneKabel);
+  svg.appendChild(kabel);
+  // Ein als falsch markierter Widerstand bekommt im Bild seine normale Farbe
+  Array.prototype.forEach.call(svg.querySelectorAll("rect"), function (r) {
+    if (/stroke:\s*rgb\(198, 40, 40\)/.test(r.getAttribute("style") || "")) {
+      r.setAttribute("style", r.getAttribute("style").replace(/stroke:[^;]+/, "stroke:#8a6a3a").replace(/stroke-width:[^;]+/, "stroke-width:1.2px"));
+    }
+  });
+
+  // Bilder als data:-Adressen einbetten
+  var cache = Schaltbrett._bildCache = Schaltbrett._bildCache || {};
+  function alsDataUrl(src) {
+    if (cache[src]) return Promise.resolve(cache[src]);
+    return fetch(src).then(function (r) {
+      if (!r.ok) throw new Error("Bild nicht gefunden: " + src);
+      return r.blob();
+    }).then(function (blob) {
+      return new Promise(function (ok, fehler) {
+        var fr = new FileReader();
+        fr.onload = function () { cache[src] = fr.result; ok(fr.result); };
+        fr.onerror = fehler;
+        fr.readAsDataURL(blob);
+      });
+    });
+  }
+  var bilder = Array.prototype.slice.call(svg.querySelectorAll("image"));
+  return Promise.all(bilder.map(function (img) {
+    var src = img.getAttribute("href") || img.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+    return alsDataUrl(src).then(function (d) {
+      img.setAttribute("href", d);
+      img.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", d);
+    });
+  })).then(function () {
+    var text = new XMLSerializer().serializeToString(svg);
+    return new Promise(function (ok, fehler) {
+      var bild = new Image();
+      bild.onload = function () {
+        // Safari braucht manchmal einen Moment, bis eingebettete Bilder bereit sind
+        setTimeout(function () {
+          try {
+            var leinwand = document.createElement("canvas");
+            leinwand.width = breite; leinwand.height = hoehe;
+            var ctx = leinwand.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, breite, hoehe);
+            ctx.drawImage(bild, 0, 0, breite, hoehe);
+            leinwand.toBlob(function (blob) {
+              if (blob) ok(blob); else fehler(new Error("Bild konnte nicht erzeugt werden."));
+            }, "image/png");
+          } catch (e) { fehler(e); }
+        }, 120);
+      };
+      bild.onerror = function () { fehler(new Error("Bild konnte nicht erzeugt werden.")); };
+      bild.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(text);
+    });
+  });
+};

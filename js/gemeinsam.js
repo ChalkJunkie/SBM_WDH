@@ -11,19 +11,19 @@
 // Versionsnummer des Spiels. Steht auch hinter allen Dateinamen in den
 // HTML-Dateien (?v=...), damit der Browser nach einem Update keine alten
 // Dateien aus dem Zwischenspeicher mischt. Wird auf der Startseite angezeigt.
-var SPIEL_VERSION = "2026-11-07a";
+var SPIEL_VERSION = "2026-11-11a";
 
 // Wie viele Runden (Rückmeldung -> Umsetzung -> Test) es gab und wie viel
 // Arbeitszeit der Lehrkraft ungefähr im Spiel steckt. Wird von werkzeuge/veroeffentlichen.py aus
 // werkzeuge/iterationen.json eingetragen, bitte nicht von Hand ändern.
-var SPIEL_ITERATIONEN = 21;
+var SPIEL_ITERATIONEN = 22;
 var SPIEL_STUNDEN = 6;
 
 // Offline-Web-App: nur in der veröffentlichten Version eingeschaltet
 // (dort trägt werkzeuge/veroeffentlichen.py "true" ein).
 var SPIEL_OFFLINE = true;
 
-// Text für die Startseite, z. B. "Version 2026-11-07a; 21 Iterationen, ca. 6 Stunden Arbeit"
+// Text für die Startseite, z. B. "Version 2026-11-11a; 21 Iterationen, ca. 6 Stunden Arbeit"
 function versionsText() {
   return "Version " + SPIEL_VERSION + "; " + SPIEL_ITERATIONEN + " Iterationen, ca. " + SPIEL_STUNDEN + " Stunden Arbeit";
 }

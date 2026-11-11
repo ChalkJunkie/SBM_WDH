@@ -520,6 +520,47 @@
     });
   }
 
+  // ---------- Als Bild exportieren ----------
+  // Bauteile und Kabel in der aktuellen Anordnung als PNG (weißer Hintergrund,
+  // ohne die gelben Anschluss-Ringe). Speichern oder (auf dem iPad) teilen.
+  document.getElementById("exportieren").addEventListener("click", function () {
+    waehleAb();
+    zeigeAnzeige("Das Bild wird erstellt …");
+    brett.alsBild().then(function (blob) {
+      zeigeAnzeige("Tippe auf einen Anschluss.");
+      var url = URL.createObjectURL(blob);
+      var name = "Aufgabe-" + aufgabe.id + "-" + aufgabe.titel.replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, "-").replace(/^-|-$/g, "") + ".png";
+      var datei = null;
+      try { datei = new File([blob], name, { type: "image/png" }); } catch (e) { datei = null; }
+      var teilenGeht = false;
+      try { teilenGeht = !!(datei && navigator.canShare && navigator.canShare({ files: [datei] })); } catch (e) { teilenGeht = false; }
+      var knoepfe = [];
+      if (teilenGeht) knoepfe.push({ text: "📤 Teilen / In Fotos sichern", haupt: true, aktion: function () {
+        navigator.share({ files: [datei], title: name }).catch(function () {});
+      } });
+      knoepfe.push({ text: "⬇ Als Datei speichern", haupt: !teilenGeht, aktion: function () {
+        var link = document.createElement("a");
+        link.href = url; link.download = name;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      } });
+      knoepfe.push({ text: "Schließen" });
+      zeigeDialog({
+        titel: "Deine Schaltung als Bild",
+        html: '<img class="export-vorschau" alt="Vorschau des Bildes" src="' + url + '">' +
+          '<p class="klein">Tipp: Du kannst das Bild auch lange antippen und „Zu Fotos hinzufügen“ wählen.</p>',
+        knoepfe: knoepfe
+      });
+    }).catch(function () {
+      zeigeAnzeige("Tippe auf einen Anschluss.");
+      zeigeDialog({
+        titel: "Exportieren hat nicht geklappt",
+        html: "<p>" + (location.protocol === "file:"
+          ? "Das Exportieren geht nur, wenn das Spiel über eine Webadresse geöffnet ist (z. B. GitHub Pages), nicht per Doppelklick auf die Datei."
+          : "Bitte versuche es noch einmal.") + "</p>"
+      });
+    });
+  });
+
   // Beim Drehen des iPads Ansicht anpassen
   window.addEventListener("orientationchange", function () {
     setTimeout(function () { brett.zoom.allesZeigen(); }, 300);
