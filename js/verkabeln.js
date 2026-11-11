@@ -237,11 +237,13 @@
     beimKabel: beimKabel,
     beimBauteilWahl: function (n) {
       document.getElementById("drehen").disabled = !n;
+      zeigeSpiegeln(n);
       zeigeAnzeige(n ? "<strong>" + esc(DATEN.pins[n].name) + "</strong> ausgewählt.<small>Ziehen zum Verschieben, „Drehen“ zum Drehen.</small>"
                      : "Tippe ein Bauteil an oder ziehe es an eine neue Stelle.", !!n);
     },
     beimAnordnen: function (n, ergebnis) {
       document.getElementById("drehen").disabled = false;
+      zeigeSpiegeln(n);
       zeigeAnzeige(ergebnis === "kein_platz"
         ? "Dort ist kein Platz: Bauteile brauchen etwas Abstand zueinander, damit die Kabel durchpassen."
         : "<strong>" + esc(DATEN.pins[n].name) + "</strong> verschoben.", ergebnis !== "kein_platz");
@@ -271,6 +273,7 @@
     document.body.classList.toggle("modus-anordnen", an);
     brett.setzeAnordnen(an);
     document.getElementById("drehen").disabled = true;
+    zeigeSpiegeln(null);
     if (an) {
       zeigeAnzeige("Tippe ein Bauteil an oder ziehe es an eine neue Stelle.");
     } else {
@@ -281,6 +284,19 @@
   }
   document.getElementById("anordnenStart").addEventListener("click", function () { anordnenUmschalten(true); });
   document.getElementById("anordnenFertig").addEventListener("click", function () { anordnenUmschalten(false); });
+  // "Spiegeln" nur für Bauteile, die gespiegelt werden dürfen (zweibeiniger Taster)
+  var spiegelKnopf = document.getElementById("spiegeln");
+  var spiegelbareDa = aufgabe.bauteile.some(function (n) { return DATEN.schaltbrett[n] && DATEN.schaltbrett[n].spiegelbar; });
+  spiegelKnopf.hidden = !spiegelbareDa;
+  function zeigeSpiegeln(n) {
+    spiegelKnopf.disabled = !(n && DATEN.schaltbrett[n] && DATEN.schaltbrett[n].spiegelbar);
+  }
+  spiegelKnopf.addEventListener("click", function () {
+    var e = brett.spiegleGewaehltes();
+    zeigeAnzeige(e === "kein_platz" ? "Zum Spiegeln ist dort nicht genug Platz. Schiebe das Bauteil erst etwas zur Seite."
+               : e === "gespiegelt" ? "Gespiegelt." : "Tippe zuerst den Taster an.");
+  });
+
   document.getElementById("drehen").addEventListener("click", function () {
     var e = brett.dreheGewaehltes();
     zeigeAnzeige(e === "kein_platz" ? "Zum Drehen ist dort nicht genug Platz. Schiebe das Bauteil erst etwas zur Seite."

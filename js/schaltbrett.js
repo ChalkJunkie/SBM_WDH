@@ -94,13 +94,16 @@ var Anordnung = {
       ["x", "y", "drehung"].forEach(function (k) {
         if (typeof eigene[n][k] === "number") DATEN.schaltbrett[n][k] = eigene[n][k];
       });
+      if (typeof eigene[n].spiegeln === "boolean" && DATEN.schaltbrett[n].spiegelbar) DATEN.schaltbrett[n].spiegeln = eigene[n].spiegeln;
     });
   },
   speichern: function () {
     var aus = {};
     Object.keys(DATEN.schaltbrett).forEach(function (n) {
       var L = DATEN.schaltbrett[n], S = Anordnung.standard[n];
-      if (L.x !== S.x || L.y !== S.y || (L.drehung || 0) !== (S.drehung || 0)) aus[n] = { x: L.x, y: L.y, drehung: L.drehung || 0 };
+      if (L.x !== S.x || L.y !== S.y || (L.drehung || 0) !== (S.drehung || 0) || !!L.spiegeln !== !!S.spiegeln) {
+        aus[n] = { x: L.x, y: L.y, drehung: L.drehung || 0, spiegeln: !!L.spiegeln };
+      }
     });
     Speicher.schreiben("anordnung", aus);
   },
@@ -297,6 +300,24 @@ Schaltbrett.prototype.dreheGewaehltes = function () {
   this.neuAufbauen();
   Anordnung.speichern();
   return "gedreht";
+};
+
+// Ausgewähltes Bauteil an der senkrechten Achse spiegeln (links <-> rechts
+// auf dem Bildschirm, auch wenn es gedreht ist). Nur für "spiegelbar".
+Schaltbrett.prototype.spiegleGewaehltes = function () {
+  var n = this.gewaehlt;
+  if (!n) return "keins";
+  var L = DATEN.schaltbrett[n];
+  if (!L.spiegelbar) return "nicht_spiegelbar";
+  var alt = { drehung: L.drehung || 0, spiegeln: !!L.spiegeln };
+  // Spiegeln auf dem Bildschirm = im Bild spiegeln und die Drehung umkehren
+  L.spiegeln = !alt.spiegeln;
+  L.drehung = (360 - alt.drehung) % 360;
+  // Größe bleibt gleich (90/270 bleiben quer), also bleibt auch die Lage gleich
+  if (this.ueberlappt(n)) { L.drehung = alt.drehung; L.spiegeln = alt.spiegeln; return "kein_platz"; }
+  this.neuAufbauen();
+  Anordnung.speichern();
+  return "gespiegelt";
 };
 
 Schaltbrett.prototype.anordnungZuruecksetzen = function () {

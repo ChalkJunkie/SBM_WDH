@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <title>Verkabeln – Seifenblasenmaschine</title>
-  <link rel="stylesheet" href="css/stil.css?v=2026-11-11b">
+  <link rel="stylesheet" href="css/stil.css?v=2026-11-11c">
 </head>
 <body class="seite-spiel">
 
@@ -60,8 +60,9 @@
 
       <!-- Nur im Modus "Bauteile anordnen" sichtbar -->
       <div class="anordnen-leiste nur-anordnen" id="anordnenLeiste">
-        <p class="auftrag">Ziehe ein Bauteil mit dem Finger an eine neue Stelle. Tippe ein Bauteil an und drücke „Drehen“, um es um 90° zu drehen. Die Kabel bleiben angeschlossen.</p>
+        <p class="auftrag">Ziehe ein Bauteil mit dem Finger an eine neue Stelle. Tippe ein Bauteil an und drücke „Drehen“, um es um 90° zu drehen. Den Taster kannst du auch spiegeln. Die Kabel bleiben angeschlossen.</p>
         <button type="button" class="knopf gross" id="drehen" disabled>↻ Drehen</button>
+        <button type="button" class="knopf gross" id="spiegeln" disabled hidden>⇆ Spiegeln</button>
         <button type="button" class="knopf" id="anordnungZurueck">↺ Anordnung zurücksetzen</button>
         <button type="button" class="knopf haupt gross" id="anordnenFertig">✔ Fertig mit Anordnen</button>
       </div>
@@ -72,20 +73,20 @@
 
   <!-- Reihenfolge wichtig: erst DATEN anlegen, dann Datendateien, dann Programm -->
   <script>window.DATEN = {};</script>
-  <script src="js/gemeinsam.js?v=2026-11-11b"></script>
-  <script src="data/code.js?v=2026-11-11b"></script>
-  <script src="data/fehlersuche.js?v=2026-11-11b"></script>
-  <script src="data/vergleich.js?v=2026-11-11b"></script>
-  <script src="data/lesen.js?v=2026-11-11b"></script>
-  <script src="data/pins.js?v=2026-11-11b"></script>
-  <script src="data/schaltbrett.js?v=2026-11-11b"></script>
-  <script src="data/dokumente.js?v=2026-11-11b"></script>
-  <script src="data/hinweise.js?v=2026-11-11b"></script>
-  <script src="data/aufgaben.js?v=2026-11-11b"></script>
-  <script src="js/zoom.js?v=2026-11-11b"></script>
-  <script src="js/kabelweg.js?v=2026-11-11b"></script>
-  <script src="js/schaltbrett.js?v=2026-11-11b"></script>
-  <script src="js/pruefung.js?v=2026-11-11b"></script>
-  <script src="js/verkabeln.js?v=2026-11-11b"></script>
+  <script src="js/gemeinsam.js?v=2026-11-11c"></script>
+  <script src="data/code.js?v=2026-11-11c"></script>
+  <script src="data/fehlersuche.js?v=2026-11-11c"></script>
+  <script src="data/vergleich.js?v=2026-11-11c"></script>
+  <script src="data/lesen.js?v=2026-11-11c"></script>
+  <script src="data/pins.js?v=2026-11-11c"></script>
+  <script src="data/schaltbrett.js?v=2026-11-11c"></script>
+  <script src="data/dokumente.js?v=2026-11-11c"></script>
+  <script src="data/hinweise.js?v=2026-11-11c"></script>
+  <script src="data/aufgaben.js?v=2026-11-11c"></script>
+  <script src="js/zoom.js?v=2026-11-11c"></script>
+  <script src="js/kabelweg.js?v=2026-11-11c"></script>
+  <script src="js/schaltbrett.js?v=2026-11-11c"></script>
+  <script src="js/pruefung.js?v=2026-11-11c"></script>
+  <script src="js/verkabeln.js?v=2026-11-11c"></script>
 </body>
 </html>
